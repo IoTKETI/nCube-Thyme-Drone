@@ -29,7 +29,7 @@ conf.sim = 'disable'; // enable or disable
 
 // build cse
 cse = {
-    host: 'gcs.iotocean.org',
+    host: 'localhost',
     port: '7579',
     name: 'Mobius',
     id: '/Mobius2',
@@ -44,7 +44,7 @@ try {
 }
 catch (e) {
     console.log('can not find flight.json file');
-    ae_name.approval_gcs = '';
+    ae_name.approval_gcs = 'KETI';
     ae_name.flight = 'Dione';
     fs.writeFileSync('flight.json', JSON.stringify(ae_name, null, 4), 'utf8');
 }
