@@ -42,7 +42,7 @@ let my_command_parent_name = '';
 let my_command_name = '';
 
 let my_drone_type = 'ardupilot';
-let my_system_id = 8;
+global.my_system_id = 8;
 
 let drone_info = {};
 

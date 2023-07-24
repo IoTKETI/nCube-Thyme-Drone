@@ -251,7 +251,7 @@ function SitlUdpData(data) {
 
                 if (mavStrFromDrone.length >= mavLength) {
                     mavPacket = mavStrFromDrone.substring(0, mavLength);
-                    console.log('v1', mavPacket);
+                    // console.log('v1', mavPacket);
 
                     doPublish(sendDataTopic.drone, mavPacket);
 
@@ -268,7 +268,7 @@ function SitlUdpData(data) {
 
                 if (mavStrFromDrone.length >= mavLength) {
                     mavPacket = mavStrFromDrone.substring(0, mavLength);
-                    console.log('v2', mavPacket);
+                    // console.log('v2', mavPacket);
 
                     doPublish(sendDataTopic.drone, mavPacket);
 
@@ -305,7 +305,7 @@ function parseMavFromDrone(mavPacket) {
             msg_id = parseInt(mavPacket.substring(10, 12).toLowerCase(), 16);
             base_offset = 12;
         }
-        My_sys_id = sys_id;
+        my_system_id = sys_id;
 
         if (msg_id === mavlink.MAVLINK_MSG_ID_HEARTBEAT) { // #00 : HEARTBEAT
             var custom_mode = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
