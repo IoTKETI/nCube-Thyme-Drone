@@ -44,7 +44,7 @@ let my_command_name = '';
 let my_drone_type = 'ardupilot';
 global.my_system_id = 8;
 
-let drone_info = {};
+global.drone_info = {};
 
 let request_count = 0;
 

@@ -90,7 +90,7 @@ let createConnection = () => {
 
                     if (my_sortie_name === 'unknown-arm') { // 시작될 때 이미 드론이 시동이 걸린 상태
                         // 모비우스 조회해서 현재 sortie를 찾아서 설정함
-                        let path = 'http://' + conf.cse.host + ':' + conf.cse.port + '/Mobius/' + conf.drone_info.gcs + '/Drone_Data/' + conf.drone_info.drone;
+                        let path = 'http://' + conf.cse.host + ':' + conf.cse.port + '/Mobius/' + drone_info.gcs + '/Drone_Data/' + conf.drone_info.drone;
                         let cra = moment().utc().format('YYYYMMDD');
 
                         onem2m_client.getSortieLatest(path, cra, (status, uril) => {
