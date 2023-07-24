@@ -38,6 +38,7 @@ let sitlUDP2 = dgram.createSocket('udp4'); // to send commands received from gcs
 
 let sendDataTopic = {
     drone: '/thyme/drone',
+    sortie: '/thyme/sortie'
 };
 
 let recvDataTopic = {
@@ -255,7 +256,7 @@ function SitlUdpData(data) {
 
                     doPublish(sendDataTopic.drone, mavPacket);
 
-                    // setTimeout(parseMavFromDrone, 0, mavPacket);
+                    setTimeout(parseMavFromDrone, 0, mavPacket);
 
                     mavStrFromDrone = mavStrFromDrone.substring(mavLength);
                     mavStrFromDroneLength = 0;
@@ -272,7 +273,7 @@ function SitlUdpData(data) {
 
                     doPublish(sendDataTopic.drone, mavPacket);
 
-                    // setTimeout(parseMavFromDrone, 0, mavPacket);
+                    setTimeout(parseMavFromDrone, 0, mavPacket);
 
                     mavStrFromDrone = mavStrFromDrone.substring(mavLength);
                     mavStrFromDroneLength = 0;
@@ -336,13 +337,13 @@ function parseMavFromDrone(mavPacket) {
                         flag_base_mode++;
                         if (flag_base_mode === 3) {
                             my_sortie_name = 'arm';
-                            setSortieName('unknown-arm:' + fc.global_position_int.time_boot_ms.toString());
+                            doPublish(sendDataTopic.sortie, 'unknown-arm:' + fc.global_position_int.time_boot_ms.toString());
                         }
                     }
                     else {
                         flag_base_mode = 0;
                         my_sortie_name = 'disarm';
-                        setSortieName('unknown-disarm:0');
+                        doPublish(sendDataTopic.sortie, 'unknown-disarm:0');
                     }
                 }
                 else if(my_sortie_name === 'disarm') {
@@ -350,7 +351,7 @@ function parseMavFromDrone(mavPacket) {
                         flag_base_mode++;
                         if (flag_base_mode === 3) {
                             my_sortie_name = 'arm';
-                            setSortieName('disarm-arm:' + fc.global_position_int.time_boot_ms.toString());
+                            doPublish(sendDataTopic.sortie, 'disarm-arm:' + fc.global_position_int.time_boot_ms.toString());
                         }
                     }
                     else {
@@ -365,7 +366,7 @@ function parseMavFromDrone(mavPacket) {
                     else {
                         flag_base_mode = 0;
                         my_sortie_name = 'disarm';
-                        setSortieName('arm-disarm:0');
+                        doPublish(sendDataTopic.sortie, 'arm-disarm:0');
                     }
                 }
             }
@@ -402,54 +403,6 @@ function parseMavFromDrone(mavPacket) {
     } catch
         (e) {
         console.log('[parseMavFromDrone Error]', e);
-    }
-}
-
-function setSortieName(message){
-    let arr_message = message.toString().split(':');
-    my_sortie_name = arr_message[0];
-    let time_boot_ms = arr_message[1];
-
-    if (my_sortie_name === 'unknown-arm') { // 시작될 때 이미 드론이 시동이 걸린 상태
-        // 모비우스 조회해서 현재 sortie를 찾아서 설정함
-        let path = 'http://' + conf.cse.host + ':' + conf.cse.port + '/Mobius/' + conf.drone_info.gcs + '/Drone_Data/' + conf.drone_info.drone;
-        let cra = moment().utc().format('YYYYMMDD');
-
-        onem2m_client.getSortieLatest(path, cra, (status, uril) => {
-            if (uril.length === 0) {
-                // 현재 시동이 걸린 상태인데 오늘 생성된 sortie가 없다는 뜻이므로 새로 만듦
-                my_sortie_name = moment().format('YYYY_MM_DD_T_HH_mm');
-                prev_sortie_name = my_sortie_name;
-                my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
-                onem2m_client.createSortieContainer(my_parent_cnt_name + '?rcn=0', my_sortie_name, time_boot_ms, 0, function (rsc, res_body, count) {
-                });
-                my_gimbal_name = my_gimbal_parent + '/' + my_sortie_name;
-                onem2m_client.crtct(my_gimbal_parent + '?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
-                });
-            } else {
-                my_sortie_name = uril[0].split('/')[4];
-                prev_sortie_name = my_sortie_name;
-                my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
-            }
-        });
-    } else if (my_sortie_name === 'unknown-disarm') { // 시작될 때 드론이 시동이 꺼진 상태
-        // disarm sortie 적용
-        my_sortie_name = 'disarm';
-        my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
-    } else if (my_sortie_name === 'disarm-arm') { // 드론이 꺼진 상태에서 시동이 걸리는 상태
-        // 새로운 sortie 만들어 생성하고 설정
-        my_sortie_name = moment().format('YYYY_MM_DD_T_HH_mm');
-        prev_sortie_name = my_sortie_name;
-        my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
-        onem2m_client.createSortieContainer(my_parent_cnt_name + '?rcn=0', my_sortie_name, time_boot_ms, 0, function (rsc, res_body, count) {
-        });
-        my_gimbal_name = my_gimbal_parent + '/' + my_sortie_name;
-        onem2m_client.crtct(my_gimbal_parent + '?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
-        });
-    } else if (my_sortie_name === 'arm-disarm') { // 드론이 시동 걸린 상태에서 시동이 꺼지는 상태
-        // disarm sortie 적용
-        my_sortie_name = 'disarm';
-        my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
     }
 }
 /* */

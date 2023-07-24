@@ -36,7 +36,7 @@ const normal_interval = 100;
 
 global.my_sortie_name = 'unknown';
 let my_gcs_name = '';
-let my_parent_cnt_name = '';
+global.my_parent_cnt_name = '';
 global.my_cnt_name = '';
 let my_command_parent_name = '';
 let my_command_name = '';
@@ -206,7 +206,7 @@ function retrieve_my_cnt_name() {
     });
 }
 
-setTimeout(setup_resources, 100, sh_state); // TODO: sh_state로 파라미터 수정
+setTimeout(setup_resources, 100, sh_state);
 
 function setup_resources(_status) {
     sh_state = _status;
