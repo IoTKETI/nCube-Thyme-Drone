@@ -111,6 +111,8 @@ let createConnection = () => {
                         // disarm sortie 적용
                         my_sortie_name = 'disarm';
                         my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
+                        onem2m_client.createSortieContainer(my_parent_cnt_name + '?rcn=0', my_sortie_name, time_boot_ms, 0, function (rsc, res_body, count) {
+                        });
                     } else if (my_sortie_name === 'disarm-arm') { // 드론이 꺼진 상태에서 시동이 걸리는 상태
                         // 새로운 sortie 만들어 생성하고 설정
                         my_sortie_name = moment().format('YYYY_MM_DD_T_HH_mm');
