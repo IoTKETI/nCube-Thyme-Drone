@@ -2319,10 +2319,10 @@ let createSortieContainer = function(parent, rn, time_boot_ms, count, callback) 
         console.log(bodyString);
     }
 
-    http_request(conf.ae.id, parent, 'post', '3', bodyString, function (rsc, res_body) {
-        console.log(count + ' - ' + parent + '/' + rn + ' - x-m2m-rsc : ' + rsc + ' <----');
+    http_request(parent, 'post', '3', bodyString, function (res, res_body) {
+        console.log(count + ' - ' + parent + '/' + rn + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
         console.log(res_body);
-        callback(rsc, res_body, count);
+        callback(res.headers['x-m2m-rsc'], res_body, count);
     });
 };
 
