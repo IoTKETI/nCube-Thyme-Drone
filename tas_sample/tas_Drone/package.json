@@ -1,0 +1,13 @@
+{
+    "name": "Tas_Drone",
+    "version": "1.0.0",
+    "main": "tas_Drone.js",
+    "dependencies": {
+        "jspack": "0.0.4",
+        "mqtt": "^4.3.7",
+        "nanoid": "^3.2.0",
+        "serialport": "^11.0.0",
+        "underscore": "^1.9.2"
+    }
+}
+
