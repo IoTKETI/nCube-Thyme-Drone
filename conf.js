@@ -118,7 +118,7 @@ acp.id = ae.id;
 conf.usesecure = 'disable';
 
 if (conf.usesecure === 'enable') {
-    cse.mqttport = '8883'; // TODO: 다른 포트로 변경 예정. GCS에서 8883포트를 websocket 포트로 사용 중
+    cse.mqttport = '8883';
 }
 
 conf.cse = cse;

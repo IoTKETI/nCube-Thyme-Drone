@@ -32,7 +32,7 @@ let tas = {
 };
 
 var mavPort = null;
-var mavPortNum = 'COM5';
+var mavPortNum = 'COM4';
 var mavBaudrate = '115200';
 
 let sendDataTopic = {
@@ -134,7 +134,7 @@ let doPublish = (topic, payload) => {
             if (error) {
                 console.log('Publish error', error)
             }
-            console.log(topic, '-', payload);
+            // console.log(topic, '-', payload);
         });
     }
 };

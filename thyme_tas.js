@@ -80,7 +80,7 @@ let createConnection = () => {
 
                 /* USER CODES */
                 if(topic === getDataTopic.drone) {
-                    // TODO: 서버에 MQTT 통해서 실시간 전송하여 GCS 연동할 수 있도록
+                    mqtt_client.publish(my_cnt_name, Buffer.from(message.toString(), 'hex'));
                     send_aggr_to_Mobius(my_cnt_name, message.toString(), 2000);
                 }
                 else if(topic === getDataTopic.sortie) {

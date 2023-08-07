@@ -194,6 +194,11 @@ function retrieve_my_cnt_name() {
             my_command_parent_name = info.parent;
             my_command_name = my_command_parent_name + '/' + info.name;
 
+            if (mqtt_client !== null) {
+                mqtt_client.subscribe(my_command_name, () => {
+                    console.log('subscribe my_command_name as ' + my_command_name);
+                });
+            }
             // MQTT_SUBSCRIPTION_ENABLE = 1;
             sh_state = 'crtct';
             request_count = 0;
