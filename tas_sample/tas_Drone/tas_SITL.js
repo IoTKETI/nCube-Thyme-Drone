@@ -44,6 +44,9 @@ let sendDataTopic = {
 let recvDataTopic = {
     gcs: '/gcs/cmd',
 };
+
+let _my_sortie_name = 'unknown';
+
 /* */
 
 let createConnection = () => {
@@ -332,40 +335,40 @@ function parseMavFromDrone(mavPacket) {
 
                 let armStatus = (fc.heartbeat.base_mode & 0x80) === 0x80;
 
-                if(my_sortie_name === 'unknown') {
+                if(_my_sortie_name === 'unknown') {
                     if (armStatus) {
                         flag_base_mode++;
                         if (flag_base_mode === 3) {
-                            my_sortie_name = 'arm';
+                            _my_sortie_name = 'arm';
                             doPublish(sendDataTopic.sortie, 'unknown-arm:' + fc.global_position_int.time_boot_ms.toString());
                         }
                     }
                     else {
                         flag_base_mode = 0;
-                        my_sortie_name = 'disarm';
+                        _my_sortie_name = 'disarm';
                         doPublish(sendDataTopic.sortie, 'unknown-disarm:0');
                     }
                 }
-                else if(my_sortie_name === 'disarm') {
+                else if(_my_sortie_name === 'disarm') {
                     if (armStatus) {
                         flag_base_mode++;
                         if (flag_base_mode === 3) {
-                            my_sortie_name = 'arm';
+                            _my_sortie_name = 'arm';
                             doPublish(sendDataTopic.sortie, 'disarm-arm:' + fc.global_position_int.time_boot_ms.toString());
                         }
                     }
                     else {
                         flag_base_mode = 0;
-                        my_sortie_name = 'disarm';
+                        _my_sortie_name = 'disarm';
                     }
                 }
-                else if(my_sortie_name === 'arm') {
+                else if(_my_sortie_name === 'arm') {
                     if (armStatus) {
-                        my_sortie_name = 'arm';
+                        _my_sortie_name = 'arm';
                     }
                     else {
                         flag_base_mode = 0;
-                        my_sortie_name = 'disarm';
+                        _my_sortie_name = 'disarm';
                         doPublish(sendDataTopic.sortie, 'arm-disarm:0');
                     }
                 }
