@@ -34,7 +34,7 @@ global.onem2m_client = new Onem2mClient(options);
 const retry_interval = 2500;
 const normal_interval = 100;
 
-global.my_sortie_name = 'unknown';
+global.my_sortie_name = 'disarm';
 let my_gcs_name = '';
 global.my_parent_cnt_name = '';
 global.my_cnt_name = '';
