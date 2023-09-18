@@ -12,16 +12,16 @@
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-var ip = require("ip");
-var fs = require('fs');
-let {nanoid} = require("nanoid");
+const ip = require("ip");
+const fs = require('fs');
+const {nanoid} = require("nanoid");
 
-var conf = {};
-var cse = {};
-var ae = {};
-var cnt_arr = [];
-var sub_arr = [];
-var acp = {};
+let conf = {};
+let cse = {};
+let ae = {};
+let cnt_arr = [];
+let sub_arr = [];
+let acp = {};
 
 conf.useprotocol = 'http'; // select one for 'http' or 'mqtt' or 'coap' or 'ws'
 
@@ -38,7 +38,7 @@ cse = {
 };
 
 // build ae
-var ae_name = {};
+let ae_name = {};
 try {
     ae_name = JSON.parse(fs.readFileSync('flight.json', 'utf8'));
 }

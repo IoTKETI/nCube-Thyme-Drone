@@ -16,7 +16,7 @@
 
 global.socket_arr = {};
 
-var tas_buffer = {};
+let tas_buffer = {};
 exports.buffer = tas_buffer;
 
 
@@ -214,12 +214,13 @@ exports.send_to_tas = function send_to_tas(topicName, message) {
     }
 };
 
-var aggr_content = {};
+let aggr_content = {};
 
 function send_aggr_to_Mobius(topic, content_each, gap) {
     // console.log(aggr_content);
+    let timestamp;
     if (aggr_content.hasOwnProperty(topic)) {
-        var timestamp = moment().format('YYYY-MM-DDTHH:mm:ssSSS');
+        timestamp = moment().format('YYYY-MM-DDTHH:mm:ssSSS');
         aggr_content[topic][timestamp] = content_each;
     }
     else {

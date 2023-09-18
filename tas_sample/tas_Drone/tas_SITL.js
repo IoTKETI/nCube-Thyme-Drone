@@ -94,7 +94,7 @@ let createConnection = () => {
                 if (topic === recvDataTopic.gcs) {
                     if (sitlUDP2) {
                         sitlUDP2.send(message, 0, message.length, PORT2, tas.connection.host,
-                            function (err) {
+                            (err) => {
                                 if (err) {
                                     console.log('UDP message send error', err);
                                     return;
@@ -197,10 +197,10 @@ function SitlUdpError(error) {
     setTimeout(SitlUdpOpening, 2000);
 }
 
-var mavStrFromDrone = '';
-var mavStrFromDroneLength = 0;
-var mavVersion = 'unknown';
-var mavVersionCheckFlag = false;
+let mavStrFromDrone = '';
+let mavStrFromDroneLength = 0;
+let mavVersion = 'unknown';
+let mavVersionCheckFlag = false;
 
 function SitlUdpData(data) {
     mavStrFromDrone += data.toString('hex').toLowerCase();
@@ -308,15 +308,15 @@ function SitlUdpData(data) {
     }
 }
 
-var fc = {};
-var flag_base_mode = 0;
+let fc = {};
+let flag_base_mode = 0;
 
 function parseMavFromDrone(mavPacket) {
     try {
-        var ver = mavPacket.substring(0, 2);
-        var sys_id = '';
-        var msg_id = '';
-        var base_offset = 12;
+        let ver = mavPacket.substring(0, 2);
+        let sys_id = '';
+        let msg_id = '';
+        let base_offset = 12;
 
         if (ver === 'fd') {
             sys_id = parseInt(mavPacket.substring(10, 12).toLowerCase(), 16);
@@ -424,8 +424,7 @@ function parseMavFromDrone(mavPacket) {
             fc.global_position_int.hdg = Buffer.from(hdg, 'hex').readUInt16LE(0);
         }
     }
-    catch
-        (e) {
+    catch (e) {
         console.log('[parseMavFromDrone Error]', e);
     }
 }

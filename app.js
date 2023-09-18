@@ -12,11 +12,11 @@
  * Created by ryeubi on 2015-08-31.
  */
 
-var Onem2mClient = require('./onem2m_client');
+const Onem2mClient = require('./onem2m_client');
 
-var thyme_tas = require('./thyme_tas');
+const thyme_tas = require('./thyme_tas');
 
-var options = {
+let options = {
     protocol: conf.useprotocol,
     host: conf.cse.host,
     port: conf.cse.port,
