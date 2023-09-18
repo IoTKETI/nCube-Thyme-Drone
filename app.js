@@ -55,16 +55,16 @@ function ae_response_action(status, res_body, callback) {
 }
 
 function create_cnt_all(count, callback) {
-    if(conf.cnt.length == 0) {
+    if(conf.cnt.length === 0) {
         callback(2001, count);
     }
     else {
         if(conf.cnt.hasOwnProperty(count)) {
             var parent = conf.cnt[count].parent;
             var rn = conf.cnt[count].name;
-            onem2m_client.create_cnt(parent, rn, count, function (rsc, res_body, count) {
-                if (rsc == 5106 || rsc == 2001 || rsc == 4105) {
-                    create_cnt_all(++count, function (status, count) {
+            onem2m_client.create_cnt(parent, rn, count,  (rsc, res_body, count) =>{
+                if (rsc === 5106 || rsc === 2001 || rsc === 4105) {
+                    create_cnt_all(++count,  (status, count) =>{
                         callback(status, count);
                     });
                 }
@@ -80,15 +80,15 @@ function create_cnt_all(count, callback) {
 }
 
 function delete_sub_all(count, callback) {
-    if(conf.sub.length == 0) {
+    if(conf.sub.length === 0) {
         callback(2001, count);
     }
     else {
         if(conf.sub.hasOwnProperty(count)) {
             var target = conf.sub[count].parent + '/' + conf.sub[count].name;
             onem2m_client.delete_sub(target, count, function (rsc, res_body, count) {
-                if (rsc == 5106 || rsc == 2002 || rsc == 2000 || rsc == 4105 || rsc == 4004) {
-                    delete_sub_all(++count, function (status, count) {
+                if (rsc === 5106 || rsc === 2002 || rsc === 2000 || rsc === 4105 || rsc === 4004) {
+                    delete_sub_all(++count,  (status, count) => {
                         callback(status, count);
                     });
                 }
@@ -104,7 +104,7 @@ function delete_sub_all(count, callback) {
 }
 
 function create_sub_all(count, callback) {
-    if(conf.sub.length == 0) {
+    if(conf.sub.length === 0) {
         callback(2001, count);
     }
     else {
@@ -112,9 +112,9 @@ function create_sub_all(count, callback) {
             var parent = conf.sub[count].parent;
             var rn = conf.sub[count].name;
             var nu = conf.sub[count].nu;
-            onem2m_client.create_sub(parent, rn, nu, count, function (rsc, res_body, count) {
-                if (rsc == 5106 || rsc == 2001 || rsc == 4105) {
-                    create_sub_all(++count, function (status, count) {
+            onem2m_client.create_sub(parent, rn, nu, count,  (rsc, res_body, count) => {
+                if (rsc === 5106 || rsc === 2001 || rsc === 4105) {
+                    create_sub_all(++count,  (status, count) => {
                         callback(status, count);
                     });
                 }
@@ -131,7 +131,7 @@ function create_sub_all(count, callback) {
 
 function retrieve_my_cnt_name() {
     onem2m_client.retrieve_cnt('/Mobius/' + conf.ae.approval_gcs + '/approval/' + conf.ae.name + '/la', 0, function (rsc, res_body, count) {
-        if (rsc === '2000') {
+        if (rsc === 2000) {
             drone_info = res_body[Object.keys(res_body)[0]].con;
             // console.log(drone_info);
 
@@ -222,17 +222,17 @@ function setup_resources(_status) {
         retrieve_my_cnt_name();
     }
     else if (_status === 'crtae') {
-        onem2m_client.create_ae(conf.ae.parent, conf.ae.name, conf.ae.appid, function (status, res_body) {
+        onem2m_client.create_ae(conf.ae.parent, conf.ae.name, conf.ae.appid,  (status, res_body) =>{
             console.log(res_body);
-            if (status == 2001) {
-                ae_response_action(status, res_body, function (status, aeid) {
+            if (status === 2001) {
+                ae_response_action(status, res_body,  (status, aeid) =>{
                     console.log('x-m2m-rsc : ' + status + ' - ' + aeid + ' <----');
                     request_count = 0;
 
                     setTimeout(setup_resources, 100, 'rtvae');
                 });
             }
-            else if (status == 5106 || status == 4105) {
+            else if (status === 5106 || status === 4105) {
                 console.log('x-m2m-rsc : ' + status + ' <----');
 
                 setTimeout(setup_resources, 100, 'rtvae');
@@ -244,12 +244,12 @@ function setup_resources(_status) {
         });
     }
     else if (_status === 'rtvae') {
-        onem2m_client.retrieve_ae(conf.ae.parent + '/' + conf.ae.name, function (status, res_body) {
-            if (status == 2000) {
+        onem2m_client.retrieve_ae(conf.ae.parent + '/' + conf.ae.name,  (status, res_body) => {
+            if (status === 2000) {
                 var aeid = res_body['m2m:ae']['aei'];
                 console.log('x-m2m-rsc : ' + status + ' - ' + aeid + ' <----');
 
-                if(conf.ae.id != aeid && conf.ae.id != ('/'+aeid)) {
+                if(conf.ae.id !== aeid && conf.ae.id !== ('/'+aeid)) {
                     console.log('AE-ID created is ' + aeid + ' not equal to device AE-ID is ' + conf.ae.id);
                 }
                 else {
@@ -264,8 +264,8 @@ function setup_resources(_status) {
         });
     }
     else if (_status === 'crtct') {
-        create_cnt_all(request_count, function (status, count) {
-            if(status == 9999) {
+        create_cnt_all(request_count,  (status, count) => {
+            if(status === 9999) {
                 console.log('[???} create container error!');
                 // setTimeout(setup_resources, 3000, 'crtct');
             }
@@ -279,8 +279,8 @@ function setup_resources(_status) {
         });
     }
     else if (_status === 'delsub') {
-        delete_sub_all(request_count, function (status, count) {
-            if(status == 9999) {
+        delete_sub_all(request_count,  (status, count) =>{
+            if(status === 9999) {
                 console.log('[???} create container error!');
                 // setTimeout(setup_resources, 3000, 'delsub');
             }
@@ -294,8 +294,8 @@ function setup_resources(_status) {
         });
     }
     else if (_status === 'crtsub') {
-        create_sub_all(request_count, function (status, count) {
-            if(status == 9999) {
+        create_sub_all(request_count,  (status, count) => {
+            if(status === 9999) {
                 console.log('[???} create container error!');
                 // setTimeout(setup_resources, 1000, 'crtsub');
             }
@@ -313,7 +313,7 @@ function setup_resources(_status) {
     }
 }
 
-onem2m_client.on('notification', function (source_uri, cinObj) {
+onem2m_client.on('notification',  (source_uri, cinObj) => {
 
     console.log(source_uri, cinObj);
 

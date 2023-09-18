@@ -79,11 +79,11 @@ let createConnection = () => {
                 let parent = null;
 
                 /* USER CODES */
-                if(topic === getDataTopic.drone) {
+                if (topic === getDataTopic.drone) {
                     mqtt_client.publish(my_cnt_name, Buffer.from(message.toString(), 'hex'));
                     send_aggr_to_Mobius(my_cnt_name, message.toString(), 2000);
                 }
-                else if(topic === getDataTopic.sortie) {
+                else if (topic === getDataTopic.sortie) {
                     let arr_message = message.toString().split(':');
                     my_sortie_name = arr_message[0];
                     let time_boot_ms = arr_message[1];
@@ -101,26 +101,30 @@ let createConnection = () => {
                                 my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
                                 onem2m_client.createSortieContainer(my_parent_cnt_name + '?rcn=0', my_sortie_name, time_boot_ms, 0, function (rsc, res_body, count) {
                                 });
-                            } else {
+                            }
+                            else {
                                 my_sortie_name = uril[0].split('/')[4];
                                 prev_sortie_name = my_sortie_name;
                                 my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
                             }
                         });
-                    } else if (my_sortie_name === 'unknown-disarm') { // 시작될 때 드론이 시동이 꺼진 상태
+                    }
+                    else if (my_sortie_name === 'unknown-disarm') { // 시작될 때 드론이 시동이 꺼진 상태
                         // disarm sortie 적용
                         my_sortie_name = 'disarm';
                         my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
                         onem2m_client.createSortieContainer(my_parent_cnt_name + '?rcn=0', my_sortie_name, time_boot_ms, 0, function (rsc, res_body, count) {
                         });
-                    } else if (my_sortie_name === 'disarm-arm') { // 드론이 꺼진 상태에서 시동이 걸리는 상태
+                    }
+                    else if (my_sortie_name === 'disarm-arm') { // 드론이 꺼진 상태에서 시동이 걸리는 상태
                         // 새로운 sortie 만들어 생성하고 설정
                         my_sortie_name = moment().format('YYYY_MM_DD_T_HH_mm');
                         prev_sortie_name = my_sortie_name;
                         my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
                         onem2m_client.createSortieContainer(my_parent_cnt_name + '?rcn=0', my_sortie_name, time_boot_ms, 0, function (rsc, res_body, count) {
                         });
-                    } else if (my_sortie_name === 'arm-disarm') { // 드론이 시동 걸린 상태에서 시동이 꺼지는 상태
+                    }
+                    else if (my_sortie_name === 'arm-disarm') { // 드론이 시동 걸린 상태에서 시동이 꺼지는 상태
                         // disarm sortie 적용
                         my_sortie_name = 'disarm';
                         my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
@@ -175,7 +179,7 @@ let doPublish = (topic, payload) => {
 let destroyConnection = () => {
     if (conf.tas.client.connected) {
         try {
-            if(Object.hasOwnProperty.call(conf.tas.client, '__ob__')) {
+            if (Object.hasOwnProperty.call(conf.tas.client, '__ob__')) {
                 conf.tas.client.end();
             }
             conf.tas.client = {
@@ -191,20 +195,21 @@ let destroyConnection = () => {
 };
 
 
-exports.ready_for_tas = function ready_for_tas () {
+exports.ready_for_tas = function ready_for_tas() {
     createConnection();
 
     /* ***** USER CODE ***** */
-    if(conf.sim === 'enable') {
+    if (conf.sim === 'enable') {
         require('./tas_sample/tas_Drone/tas_SITL');
-    } else {
+    }
+    else {
         require('./tas_sample/tas_Drone/tas_Drone');
     }
     /* */
 };
 
-exports.send_to_tas = function send_to_tas (topicName, message) {
-    if(setDataTopic.hasOwnProperty(topicName)) {
+exports.send_to_tas = function send_to_tas(topicName, message) {
+    if (setDataTopic.hasOwnProperty(topicName)) {
         conf.tas.client.publish(setDataTopic[topicName], message.toString())
     }
 };
@@ -216,13 +221,14 @@ function send_aggr_to_Mobius(topic, content_each, gap) {
     if (aggr_content.hasOwnProperty(topic)) {
         var timestamp = moment().format('YYYY-MM-DDTHH:mm:ssSSS');
         aggr_content[topic][timestamp] = content_each;
-    } else {
+    }
+    else {
         aggr_content[topic] = {};
         timestamp = moment().format('YYYY-MM-DDTHH:mm:ssSSS');
         aggr_content[topic][timestamp] = content_each;
 
-        setTimeout(function () {
-            onem2m_client.create_cin(topic, 1, aggr_content[topic], this, function (status, res_body, to, socket) {
+        setTimeout(() => {
+            onem2m_client.create_cin(topic, 1, aggr_content[topic], this, (status, res_body, to, socket) => {
                 console.log('x-m2m-rsc : ' + status + ' <----');
             });
 

@@ -65,7 +65,7 @@ Onem2mClient.prototype = new EventEmitter();
 
 var proto = Onem2mClient.prototype;
 
-var mqtt_init = function () {
+var mqtt_init =  () => {
     global.req_topic = '/oneM2M/req/' + onem2m_options.aei + onem2m_options.cseid + '/' + onem2m_options.bodytype;
 
     var reg_resp_topic = '/oneM2M/reg_resp/' + onem2m_options.aei + '/+/#';
@@ -106,7 +106,7 @@ var mqtt_init = function () {
 
     mqtt_client = mqtt.connect(connectOptions);
 
-    mqtt_client.on('connect', function () {
+    mqtt_client.on('connect',  () => {
         mqtt_client.subscribe(reg_resp_topic);
         mqtt_client.subscribe(resp_topic);
 
@@ -141,7 +141,7 @@ var mqtt_init = function () {
     function mqtt_message_handler(topic, message) {
         var topic_arr = topic.split("/");
         var bodytype = onem2m_options.bodytype;
-        if (topic_arr[5] != null) {
+        if (topic_arr[5]) {
             bodytype = (topic_arr[5] === 'xml') ? topic_arr[5] : ((topic_arr[5] === 'json') ? topic_arr[5] : ((topic_arr[5] === 'cbor') ? topic_arr[5] : 'json'));
         }
 
@@ -150,12 +150,12 @@ var mqtt_init = function () {
         if (topic_arr[1] === 'oneM2M' && (topic_arr[2] === 'resp' || topic_arr[2] === 'reg_resp') && topic_arr[3].replace(':', '/') === onem2m_options.aei) {
             if (bodytype === 'xml') {
                 var parser = new xml2js.Parser({explicitArray: false});
-                parser.parseString(message.toString(), function (err, jsonObj) {
+                parser.parseString(message.toString(),  (err, jsonObj) => {
                     if (err) {
                         console.log('[mqtt-resp xml2js parser error]');
                     }
                     else {
-                        if (jsonObj['m2m:rsp'] != null) {
+                        if (jsonObj['m2m:rsp']) {
                             mqtt_callback(jsonObj);
                         }
                         else {
@@ -167,12 +167,12 @@ var mqtt_init = function () {
             }
             else if (bodytype === 'cbor') {
                 var encoded = message.toString();
-                cbor.decodeFirst(encoded, function (err, jsonObj) {
+                cbor.decodeFirst(encoded,  (err, jsonObj) => {
                     if (err) {
                         console.log('[mqtt-resp cbor parser error]');
                     }
                     else {
-                        if (jsonObj['m2m:rsp'] == null) {
+                        if (!jsonObj['m2m:rsp']) {
                             jsonObj['m2m:rsp'] = jsonObj;
                         }
 
@@ -183,7 +183,7 @@ var mqtt_init = function () {
             else { // 'json'
                 var jsonObj = JSON.parse(message.toString());
 
-                if (jsonObj['m2m:rsp'] == null) {
+                if (!jsonObj['m2m:rsp']) {
                     jsonObj['m2m:rsp'] = jsonObj;
                 }
 
@@ -193,7 +193,7 @@ var mqtt_init = function () {
         else if (topic_arr[1] === 'oneM2M' && topic_arr[2] === 'req' && topic_arr[4] === onem2m_options.aei) {
             if (bodytype == 'xml') {
                 parser = new xml2js.Parser({explicitArray: false});
-                parser.parseString(message.toString(), function (err, jsonObj) {
+                parser.parseString(message.toString(), (err, jsonObj) => {
                     if (err) {
                         console.log('[mqtt noti xml2js parser error]');
                     }
@@ -206,7 +206,7 @@ var mqtt_init = function () {
             }
             else if (bodytype === 'cbor') {
                 encoded = message.toString();
-                cbor.decodeFirst(encoded, function (err, jsonObj) {
+                cbor.decodeFirst(encoded,  (err, jsonObj) => {
                     if (err) {
                         console.log('[mqtt noti cbor parser error]');
                     }
@@ -218,7 +218,7 @@ var mqtt_init = function () {
             else { // json
                 jsonObj = JSON.parse(message.toString());
 
-                if (jsonObj['m2m:rqp'] == null) {
+                if (!jsonObj['m2m:rqp']) {
                     jsonObj['m2m:rqp'] = jsonObj;
                 }
 
@@ -240,7 +240,7 @@ var mqtt_init = function () {
 var ws_client = null;
 global.ws_connection = null;
 
-var ws_init = function () {
+var ws_init =  () => {
     if (onem2m_options.usesecure === 'disable') {
         ws_client = new WebSocketClient();
 
@@ -256,23 +256,23 @@ var ws_init = function () {
 
         ws_client.connect('ws://' + onem2m_options.host + ':' + onem2m_options.wsport, protocol);
 
-        ws_client.on('connectFailed', function (error) {
+        ws_client.on('connectFailed',  (error) => {
             console.log('Connect Error: ' + error.toString());
             ws_client.removeAllListeners();
 
             sh_state = 'connect';
         });
 
-        ws_client.on('connect', function (connection) {
+        ws_client.on('connect',  (connection) => {
             console.log('WebSocket Client Connected');
             ws_connection = connection;
             sh_state = 'crtae';
 
-            connection.on('error', function (error) {
+            connection.on('error',  (error) => {
                 console.log("Connection Error: " + error.toString());
                 sh_state = 'connect';
             });
-            connection.on('close', function () {
+            connection.on('close',  () => {
                 console.log('echo-protocol Connection Closed');
                 sh_state = 'connect';
             });
@@ -310,12 +310,12 @@ var ws_init = function () {
 
                 if (bodytype === 'xml') {
                     var parser = new xml2js.Parser({explicitArray: false});
-                    parser.parseString(message.utf8Data.toString(), function (err, jsonObj) {
+                    parser.parseString(message.utf8Data.toString(),  (err, jsonObj) => {
                         if (err) {
                             console.log('[ws-resp xml2js parser error]');
                         }
                         else {
-                            if (jsonObj['m2m:rsp'] != null) {
+                            if (jsonObj['m2m:rsp']) {
                                 ws_callback(jsonObj);
                             }
                             else {
@@ -327,12 +327,12 @@ var ws_init = function () {
                 }
                 else if (bodytype === 'cbor') {
                     var encoded = message.utf8Data.toString();
-                    cbor.decodeFirst(encoded, function (err, jsonObj) {
+                    cbor.decodeFirst(encoded,  (err, jsonObj) => {
                         if (err) {
                             console.log('[ws-resp cbor parser error]');
                         }
                         else {
-                            if (jsonObj['m2m:rsp'] == null) {
+                            if (!jsonObj['m2m:rsp']) {
                                 jsonObj['m2m:rsp'] = jsonObj;
                             }
 
@@ -343,7 +343,7 @@ var ws_init = function () {
                 else { // 'json'
                     var jsonObj = JSON.parse(message.utf8Data.toString());
 
-                    if (jsonObj['m2m:rsp'] == null) {
+                    if (!jsonObj['m2m:rsp']) {
                         jsonObj['m2m:rsp'] = jsonObj;
                     }
 
@@ -397,58 +397,58 @@ function http_request(path, method, ty, bodyString, callback) {
     }
 
     var res_body = '';
-    var req = http.request(options, function (res) {
+    var req = http.request(options,  (res) => {
         //console.log('[crtae response : ' + res.statusCode);
 
         //res.setEncoding('utf8');
 
-        res.on('data', function (chunk) {
+        res.on('data',  (chunk) => {
             res_body += chunk;
         });
 
-        res.on('end', function () {
+        res.on('end',  () => {
             if (onem2m_options.bodytype === 'xml') {
                 var parser = new xml2js.Parser({explicitArray: false});
-                parser.parseString(res_body, function (err, jsonObj) {
+                parser.parseString(res_body,  (err, jsonObj) => {
                     if (err) {
                         console.log('[http_adn] xml parse error]');
                         jsonObj = {};
                         jsonObj.dbg = res_body;
-                        callback(res, jsonObj);
+                        callback(parseInt(res), jsonObj);
                     }
                     else {
-                        callback(res, jsonObj);
+                        callback(parseInt(res), jsonObj);
                     }
                 });
             }
             else if (onem2m_options.bodytype === 'cbor') {
-                cbor.decodeFirst(res_body, function (err, jsonObj) {
+                cbor.decodeFirst(res_body,  (err, jsonObj) => {
                     if (err) {
                         console.log('[http_adn] cbor parse error]');
                         jsonObj = {};
                         jsonObj.dbg = res_body;
-                        callback(res, jsonObj);
+                        callback(parseInt(res), jsonObj);
                     }
                     else {
-                        callback(res, jsonObj);
+                        callback(parseInt(res), jsonObj);
                     }
                 });
             }
             else {
                 try {
                     jsonObj = JSON.parse(res_body);
-                    callback(res, jsonObj);
+                    callback(parseInt(res), jsonObj);
                 } catch (e) {
                     console.log('[http_adn] json parse error]');
                     var jsonObj = {};
                     jsonObj.dbg = res_body;
-                    callback(res, jsonObj);
+                    callback(parseInt(res), jsonObj);
                 }
             }
         });
     });
 
-    req.on('error', function (e) {
+    req.on('error',  (e) => {
         console.log('problem with request: ' + e.message);
     });
 
@@ -495,16 +495,16 @@ function coap_request(path, method, ty, bodyString, callback) {
         req.setOption("267", ty_buf);    // X-M2M-TY
     }
 
-    req.on('response', function (res) {
-        res.on('data', function () {
+    req.on('response',  (res) => {
+        res.on('data',  () => {
             res_body += res.payload.toString();
         });
 
-        res.on('end', function () {
+        res.on('end',  () => {
             console.log(res_body);
             if (onem2m_options.bodytype === 'xml') {
                 var parser = new xml2js.Parser({explicitArray: false});
-                parser.parseString(res_body, function (err, jsonObj) {
+                parser.parseString(res_body,  (err, jsonObj) => {
                     if (err) {
                         console.log('[http_adn] xml2js parser error]');
                     }
@@ -514,7 +514,7 @@ function coap_request(path, method, ty, bodyString, callback) {
                 });
             }
             else if (onem2m_options.bodytype === 'cbor') {
-                cbor.decodeFirst(res_body, function (err, jsonObj) {
+                cbor.decodeFirst(res_body,  (err, jsonObj) => {
                     if (err) {
                         console.log('[http_adn] cbor parser error]');
                     }
@@ -530,7 +530,7 @@ function coap_request(path, method, ty, bodyString, callback) {
         });
     });
 
-    req.on('error', function (e) {
+    req.on('error',  (e) => {
         console.log(e);
     });
 
@@ -538,14 +538,14 @@ function coap_request(path, method, ty, bodyString, callback) {
     req.end();
 }
 
-var coap_noti_action = function (rqi, pc, bodytype, response) {
+var coap_noti_action =  (rqi, pc, bodytype, response) => {
     if (pc['m2m:sgn']) {
         pc.sgn = {};
         pc.sgn = pc['m2m:sgn'];
         delete pc['m2m:sgn'];
     }
 
-    parse_sgn(rqi, pc, function (path_arr, cinObj, rqi) {
+    parse_sgn(rqi, pc,  (path_arr, cinObj, rqi) => {
         if (cinObj) {
             if (cinObj.sud || cinObj.vrq) {
                 response.code = '2.01';
@@ -617,7 +617,7 @@ function coap_message_handler(request, response) {
     }
     else if (bodytype === 'cbor') {
         var encoded = request.payload.toString();
-        cbor.decodeFirst(encoded, function (err, pc) {
+        cbor.decodeFirst(encoded,  (err, pc) => {
             if (err) {
                 console.log('[coap noti cbor parser error]');
             }
@@ -630,7 +630,7 @@ function coap_message_handler(request, response) {
     }
     else {
         var parser = new xml2js.Parser({explicitArray: false});
-        parser.parseString(request.payload.toString(), function (err, pc) {
+        parser.parseString(request.payload.toString(),  (err, pc) => {
             if (err) {
                 console.log('[coap noti xml2js parser error]');
             }
@@ -711,7 +711,7 @@ function coap_message_handler(request, response) {
 
 
 ///////////
-var crtae = function (parent, rn, api, callback) {
+var crtae =  (parent, rn, api, callback) => {
     if (onem2m_options.protocol === 'http') {
         var results_ae = {};
 
@@ -748,7 +748,7 @@ var crtae = function (parent, rn, api, callback) {
             bodyString = JSON.stringify(results_ae);
         }
 
-        http_request(parent, 'post', '2', bodyString, function (res, res_body) {
+        http_request(parent, 'post', '2', bodyString,  (res, res_body) => {
             callback(res.headers['x-m2m-rsc'], res_body);
         });
     }
@@ -833,7 +833,7 @@ var crtae = function (parent, rn, api, callback) {
             bodyString = JSON.stringify(results_ae);
         }
 
-        coap_request(parent, 'post', '2', bodyString, function (res, res_body) {
+        coap_request(parent, 'post', '2', bodyString,  (res, res_body) => {
             for (var idx in res.options) {
                 if (res.options.hasOwnProperty(idx)) {
                     if (res.options[idx].name === '265') { // 'X-M2M-RSC
@@ -893,9 +893,9 @@ var crtae = function (parent, rn, api, callback) {
     }
 };
 
-var rtvae = function (target, callback) {
+var rtvae =  (target, callback) => {
     if (onem2m_options.protocol === 'http') {
-        http_request(target, 'get', '', '', function (res, res_body) {
+        http_request(target, 'get', '', '',  (res, res_body) => {
             callback(res.headers['x-m2m-rsc'], res_body);
         });
     }
@@ -940,7 +940,7 @@ var rtvae = function (target, callback) {
         }
     }
     else if (onem2m_options.protocol === 'coap') {
-        coap_request(target, 'get', '', '', function (res, res_body) {
+        coap_request(target, 'get', '', '',  (res, res_body) => {
             for (var idx in res.options) {
                 if (res.options.hasOwnProperty(idx)) {
                     if (res.options[idx].name === '265') { // 'X-M2M-RSC
@@ -993,7 +993,7 @@ var rtvae = function (target, callback) {
 };
 
 
-var udtae = function (target, callback) {
+var udtae =  (target, callback) => {
     if (onem2m_options.protocol === 'http') {
         var bodyString = '';
         var results_ae = {};
@@ -1018,7 +1018,7 @@ var udtae = function (target, callback) {
             bodyString = JSON.stringify(results_ae);
         }
 
-        http_request(target, 'put', '', bodyString, function (res, res_body) {
+        http_request(target, 'put', '', bodyString,  (res, res_body) => {
             callback(res.headers['x-m2m-rsc'], res_body);
         });
     }
@@ -1034,9 +1034,9 @@ var udtae = function (target, callback) {
 };
 
 
-var delae = function (target, callback) {
+var delae =  (target, callback) => {
     if (onem2m_options.protocol === 'http') {
-        http_request(target, 'delete', '', '', function (res, res_body) {
+        http_request(target, 'delete', '', '',  (res, res_body) => {
             callback(res.headers['x-m2m-rsc'], res_body);
         });
     }
@@ -1051,7 +1051,7 @@ var delae = function (target, callback) {
     }
 };
 
-var crtct = function (parent, rn, count, callback) {
+var crtct =  (parent, rn, count, callback) => {
     if (onem2m_options.protocol === 'http') {
         var results_ct = {};
 
@@ -1081,7 +1081,7 @@ var crtct = function (parent, rn, count, callback) {
             console.log(bodyString);
         }
 
-        http_request(parent, 'post', '3', bodyString, function (res, res_body) {
+        http_request(parent, 'post', '3', bodyString,  (res, res_body) => {
             console.log(count + ' - ' + parent + '/' + rn + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
             console.log(res_body);
             callback(res.headers['x-m2m-rsc'], res_body, count);
@@ -1164,7 +1164,7 @@ var crtct = function (parent, rn, count, callback) {
             bodyString = JSON.stringify(results_ct);
         }
 
-        coap_request(parent, 'post', '3', bodyString, function (res, res_body) {
+        coap_request(parent, 'post', '3', bodyString,  (res, res_body) => {
             for (var idx in res.options) {
                 if (res.options.hasOwnProperty(idx)) {
                     if (res.options[idx].name === '265') { // 'X-M2M-RSC
@@ -1227,9 +1227,9 @@ var crtct = function (parent, rn, count, callback) {
 };
 
 
-var rtvct = function (target, count, callback) {
+var rtvct =  (target, count, callback) => {
     if (onem2m_options.protocol === 'http') {
-        http_request(target, 'get', '', '', function (res, res_body) {
+        http_request(target, 'get', '', '',  (res, res_body) => {
             console.log(count + ' - ' + target + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
             console.log(res_body);
             callback(res.headers['x-m2m-rsc'], res_body, count);
@@ -1319,7 +1319,7 @@ var rtvct = function (target, count, callback) {
 };
 
 
-var udtct = function (target, lbl, count, callback) {
+var udtct =  (target, lbl, count, callback) => {
     if (onem2m_options.protocol === 'http') {
         var results_ct = {};
         var bodyString = '';
@@ -1344,7 +1344,7 @@ var udtct = function (target, lbl, count, callback) {
             bodyString = JSON.stringify(results_ct);
         }
 
-        http_request(target, 'put', '', bodyString, function (res, res_body) {
+        http_request(target, 'put', '', bodyString,  (res, res_body) => {
             console.log(count + ' - ' + target + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
             callback(res.headers['x-m2m-rsc'], res_body, count);
         });
@@ -1361,9 +1361,9 @@ var udtct = function (target, lbl, count, callback) {
 };
 
 
-var delct = function (target, count, callback) {
+var delct =  (target, count, callback) => {
     if (onem2m_options.protocol === 'http') {
-        http_request(target, 'delete', '', '', function (res, res_body) {
+        http_request(target, 'delete', '', '',  (res, res_body) => {
             console.log(count + ' - ' + target + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
             callback(res.headers['x-m2m-rsc'], res_body, count);
         });
@@ -1379,7 +1379,7 @@ var delct = function (target, count, callback) {
     }
 };
 
-var crtsub = function (parent, rn, nu, count, callback) {
+var crtsub =  (parent, rn, nu, count, callback) => {
     if (onem2m_options.protocol === 'http') {
         var results_ss = {};
         var bodyString = '';
@@ -1416,7 +1416,7 @@ var crtsub = function (parent, rn, nu, count, callback) {
             console.log(bodyString);
         }
 
-        http_request(parent, 'post', '23', bodyString, function (res, res_body) {
+        http_request(parent, 'post', '23', bodyString,  (res, res_body) => {
             console.log(count + ' - ' + parent + '/' + rn + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
             console.log(JSON.stringify(res_body));
             callback(res.headers['x-m2m-rsc'], res_body, count);
@@ -1510,7 +1510,7 @@ var crtsub = function (parent, rn, nu, count, callback) {
             bodyString = JSON.stringify(results_ss);
         }
 
-        coap_request(parent, 'post', '23', bodyString, function (res, res_body) {
+        coap_request(parent, 'post', '23', bodyString,  (res, res_body) => {
             for (var idx in res.options) {
                 if (res.options.hasOwnProperty(idx)) {
                     if (res.options[idx].name === '265') { // 'X-M2M-RSC
@@ -1578,7 +1578,7 @@ var crtsub = function (parent, rn, nu, count, callback) {
     if (url.parse(nu).protocol === 'http:') {
         if (!server) {
             server = http.createServer(app);
-            server.listen(url.parse(nu).port, function () {
+            server.listen(url.parse(nu).port,  () => {
                 console.log('http_server running at ' + onem2m_options.aeport + ' port');
             });
         }
@@ -1589,7 +1589,7 @@ var crtsub = function (parent, rn, nu, count, callback) {
     }
     else if (url.parse(nu).protocol === 'coap') {
         coap_server = coap.createServer();
-        coap_server.listen(onem2m_options.aeport, function () {
+        coap_server.listen(onem2m_options.aeport,  () => {
             console.log('coap_server running at ' + onem2m_options.aeport + ' port');
         });
         coap_server.on('request', coap_message_handler);
@@ -1688,9 +1688,9 @@ var crtsub = function (parent, rn, nu, count, callback) {
     }
 };
 
-var delsub = function (target, count, callback) {
+var delsub =  (target, count, callback) => {
     if (onem2m_options.protocol === 'http') {
-        http_request(target, 'delete', '', '', function (res, res_body) {
+        http_request(target, 'delete', '', '',  (res, res_body) => {
             console.log(count + ' - ' + target + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
             console.log(res_body);
             callback(res.headers['x-m2m-rsc'], res_body, count);
@@ -1738,7 +1738,7 @@ var delsub = function (target, count, callback) {
         }
     }
     else if (onem2m_options.protocol === 'coap') {
-        coap_request(target, 'delete', '', '', function (res, res_body) {
+        coap_request(target, 'delete', '', '',  (res, res_body) => {
             for (var idx in res.options) {
                 if (res.options.hasOwnProperty(idx)) {
                     if (res.options[idx].name === '265') { // 'X-M2M-RSC
@@ -1793,7 +1793,7 @@ var delsub = function (target, count, callback) {
 };
 
 
-var crtci = function (parent, count, strContent, socket, callback) {
+var crtci =  (parent, count, strContent, socket, callback) => {
     if (onem2m_options.protocol === 'http') {
         var results_ci = {};
         var bodyString = '';
@@ -1820,7 +1820,7 @@ var crtci = function (parent, count, strContent, socket, callback) {
             bodyString = JSON.stringify(results_ci);
         }
 
-        http_request(parent, 'post', '4', bodyString, function (res, res_body) {
+        http_request(parent, 'post', '4', bodyString,  (res, res_body) => {
             callback(res.headers['x-m2m-rsc'], res_body, parent, socket);
         });
     }
@@ -1894,7 +1894,7 @@ var crtci = function (parent, count, strContent, socket, callback) {
             bodyString = JSON.stringify(results_ci);
         }
 
-        coap_request(parent, 'post', '4', bodyString, function (res, res_body) {
+        coap_request(parent, 'post', '4', bodyString,  (res, res_body) => {
             for (var idx in res.options) {
                 if (res.options.hasOwnProperty(idx)) {
                     if (res.options[idx].name === '265' || (res.options[idx].name === 265)) { // 'X-M2M-RSC
@@ -1955,19 +1955,19 @@ var crtci = function (parent, count, strContent, socket, callback) {
 //var xmlParser = bodyParser.text({ type: '*/*' });
 
 
-var parse_sgn = function (rqi, pc, callback) {
+var parse_sgn = (rqi, pc, callback) => {
     if (pc.sgn) {
-        var nmtype = pc['sgn'] != null ? 'short' : 'long';
+        var nmtype = pc['sgn']? 'short' : 'long';
         var sgnObj = {};
         var cinObj = {};
-        sgnObj = pc['sgn'] != null ? pc['sgn'] : pc['singleNotification'];
+        sgnObj = pc['sgn']? pc['sgn'] : pc['singleNotification'];
 
         if (nmtype === 'long') {
             console.log('oneM2M spec. define only short name for resource')
         }
         else { // 'short'
             if (sgnObj.sur) {
-                if (sgnObj.sur.charAt(0) != '/') {
+                if (sgnObj.sur.charAt(0) !== '/') {
                     sgnObj.sur = '/' + sgnObj.sur;
                 }
                 var path_arr = sgnObj.sur.split('/');
@@ -2019,7 +2019,7 @@ var parse_sgn = function (rqi, pc, callback) {
 };
 
 
-var response_mqtt = function (rsp_topic, rsc, to, fr, rqi, inpc, bodytype) {
+var response_mqtt = (rsp_topic, rsc, to, fr, rqi, inpc, bodytype) => {
     var rsp_message = {};
     rsp_message['m2m:rsp'] = {};
     rsp_message['m2m:rsp'].rsc = rsc;
@@ -2048,19 +2048,19 @@ var response_mqtt = function (rsp_topic, rsc, to, fr, rqi, inpc, bodytype) {
     }
 };
 
-var mqtt_noti_action = function (topic_arr, jsonObj) {
-    if (jsonObj != null) {
+var mqtt_noti_action = (topic_arr, jsonObj) => {
+    if (jsonObj) {
         var bodytype = onem2m_options.bodytype;
-        if (topic_arr[5] != null) {
+        if (topic_arr[5]) {
             bodytype = topic_arr[5];
         }
 
-        var op = (jsonObj['m2m:rqp']['op'] == null) ? '' : jsonObj['m2m:rqp']['op'];
-        var to = (jsonObj['m2m:rqp']['to'] == null) ? '' : jsonObj['m2m:rqp']['to'];
-        var fr = (jsonObj['m2m:rqp']['fr'] == null) ? '' : jsonObj['m2m:rqp']['fr'];
-        var rqi = (jsonObj['m2m:rqp']['rqi'] == null) ? '' : jsonObj['m2m:rqp']['rqi'];
+        var op = (!jsonObj['m2m:rqp']['op']) ? '' : jsonObj['m2m:rqp']['op'];
+        var to = (!jsonObj['m2m:rqp']['to']) ? '' : jsonObj['m2m:rqp']['to'];
+        var fr = (!jsonObj['m2m:rqp']['fr']) ? '' : jsonObj['m2m:rqp']['fr'];
+        var rqi = (!jsonObj['m2m:rqp']['rqi']) ? '' : jsonObj['m2m:rqp']['rqi'];
         var pc = {};
-        pc = (jsonObj['m2m:rqp']['pc'] == null) ? {} : jsonObj['m2m:rqp']['pc'];
+        pc = (!jsonObj['m2m:rqp']['pc']) ? {} : jsonObj['m2m:rqp']['pc'];
 
         if (pc['m2m:sgn']) {
             pc.sgn = {};
@@ -2068,7 +2068,7 @@ var mqtt_noti_action = function (topic_arr, jsonObj) {
             delete pc['m2m:sgn'];
         }
 
-        parse_sgn(rqi, pc, function (path_arr, cinObj, rqi) {
+        parse_sgn(rqi, pc, (path_arr, cinObj, rqi) => {
             if (cinObj) {
                 if (cinObj.sud || cinObj.vrq) {
                     var resp_topic = '/oneM2M/resp/' + topic_arr[3] + '/' + topic_arr[4] + '/' + topic_arr[5];
@@ -2091,14 +2091,14 @@ var mqtt_noti_action = function (topic_arr, jsonObj) {
 };
 
 
-var http_noti_action = function (rqi, pc, bodytype, response) {
+var http_noti_action =  (rqi, pc, bodytype, response) => {
     if (pc['m2m:sgn']) {
         pc.sgn = {};
         pc.sgn = pc['m2m:sgn'];
         delete pc['m2m:sgn'];
     }
 
-    parse_sgn(rqi, pc, function (path_arr, cinObj, rqi) {
+    parse_sgn(rqi, pc,  (path_arr, cinObj, rqi) => {
         if (cinObj) {
             if (cinObj.sud || cinObj.vrq) {
                 response.setHeader('X-M2M-RSC', '2001');
@@ -2120,7 +2120,7 @@ var http_noti_action = function (rqi, pc, bodytype, response) {
 };
 
 function mqtt_connect(serverip, port, noti_topic) {
-    if (mqtt_sub_client == null) {
+    if (!mqtt_sub_client) {
         if (onem2m_options.usesecure === 'disable') {
             var connectOptions = {
                 host: serverip,
@@ -2156,17 +2156,17 @@ function mqtt_connect(serverip, port, noti_topic) {
 
         mqtt_sub_client = mqtt.connect(connectOptions);
 
-        mqtt_sub_client.on('connect', function () {
+        mqtt_sub_client.on('connect', () => {
             mqtt_sub_client.subscribe(noti_topic);
             console.log('[mqtt_connect] noti_topic : ' + noti_topic);
         });
 
-        mqtt_sub_client.on('message', function (topic, message) {
+        mqtt_sub_client.on('message',  (topic, message) => {
 
             var topic_arr = topic.split("/");
 
             var bodytype = onem2m_options.bodytype;
-            if (topic_arr[5] != null) {
+            if (topic_arr[5]) {
                 bodytype = (topic_arr[5] === 'xml') ? topic_arr[5] : ((topic_arr[5] === 'json') ? topic_arr[5] : ((topic_arr[5] === 'cbor') ? topic_arr[5] : 'json'));
             }
 
@@ -2174,7 +2174,7 @@ function mqtt_connect(serverip, port, noti_topic) {
                 console.log(message.toString());
                 if (bodytype === 'xml') {
                     var parser = new xml2js.Parser({explicitArray: false});
-                    parser.parseString(message.toString(), function (err, jsonObj) {
+                    parser.parseString(message.toString(),  (err, jsonObj) => {
                         if (err) {
                             console.log('[mqtt noti xml2js parser error]');
                         }
@@ -2185,7 +2185,7 @@ function mqtt_connect(serverip, port, noti_topic) {
                 }
                 else if (bodytype === 'cbor') {
                     var encoded = message.toString();
-                    cbor.decodeFirst(encoded, function (err, jsonObj) {
+                    cbor.decodeFirst(encoded,  (err, jsonObj) => {
                         if (err) {
                             console.log('[mqtt noti cbor parser error]');
                         }
@@ -2197,7 +2197,7 @@ function mqtt_connect(serverip, port, noti_topic) {
                 else { // json
                     var jsonObj = JSON.parse(message.toString());
 
-                    if (jsonObj['m2m:rqp'] == null) {
+                    if (!jsonObj['m2m:rqp']) {
                         jsonObj['m2m:rqp'] = jsonObj;
                     }
                     mqtt_noti_action(topic_arr, jsonObj);
@@ -2208,7 +2208,7 @@ function mqtt_connect(serverip, port, noti_topic) {
             }
         });
 
-        mqtt_sub_client.on('error', function (err) {
+        mqtt_sub_client.on('error',  (err) => {
             console.log(err.message);
         });
     }
@@ -2223,12 +2223,12 @@ var onem2mParser = bodyParser.text(
 
 var noti_count = 0;
 
-app.post('/:resourcename0', onem2mParser, function (request, response) {
+app.post('/:resourcename0', onem2mParser,  (request, response) => {
     var fullBody = '';
-    request.on('data', function (chunk) {
+    request.on('data',  (chunk) => {
         fullBody += chunk.toString();
     });
-    request.on('end', function () {
+    request.on('end',  () => {
         request.body = fullBody;
 
         //console.log(fullBody);
@@ -2255,7 +2255,7 @@ app.post('/:resourcename0', onem2mParser, function (request, response) {
         }
         else if (bodytype === 'cbor') {
             var encoded = request.body;
-            cbor.decodeFirst(encoded, function (err, pc) {
+            cbor.decodeFirst(encoded,  (err, pc) => {
                 if (err) {
                     console.log('[http noti cbor parser error]');
                 }
@@ -2268,7 +2268,7 @@ app.post('/:resourcename0', onem2mParser, function (request, response) {
         }
         else {
             var parser = new xml2js.Parser({explicitArray: false});
-            parser.parseString(request.body, function (err, pc) {
+            parser.parseString(request.body, (err, pc) => {
                 if (err) {
                     console.log('[http noti xml2js parser error]');
                 }
@@ -2284,7 +2284,7 @@ app.post('/:resourcename0', onem2mParser, function (request, response) {
 
 let getSortieLatest = async (path, cra, callback) => {
     try {
-        http_request(path + '?fu=1&ty=3&cra=' + cra, 'get', '', '', function (res, res_body) {
+        http_request(path + '?fu=1&ty=3&cra=' + cra, 'get', '', '', (res, res_body) => {
             console.log(path + '?fu=1&ty=3&cra=' + cra + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
             console.log(res_body);
             callback(res_body.status, res_body.data['m2m:uril']);
@@ -2303,7 +2303,7 @@ let getSortieLatest = async (path, cra, callback) => {
     }
 }
 
-let createSortieContainer = function (parent, rn, time_boot_ms, count, callback) {
+let createSortieContainer = (parent, rn, time_boot_ms, count, callback) => {
     var results_ct = {};
 
     //console.log(count + ' - ' + conf.cnt[count].name);
@@ -2320,7 +2320,7 @@ let createSortieContainer = function (parent, rn, time_boot_ms, count, callback)
         console.log(bodyString);
     }
 
-    http_request(parent, 'post', '3', bodyString, function (res, res_body) {
+    http_request(parent, 'post', '3', bodyString, (res, res_body) => {
         console.log(count + ' - ' + parent + '/' + rn + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
         console.log(res_body);
         callback(res.headers['x-m2m-rsc'], res_body, count);
