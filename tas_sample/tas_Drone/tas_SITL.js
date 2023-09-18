@@ -314,6 +314,7 @@ let flag_base_mode = 0;
 function parseMavFromDrone(mavPacket) {
     try {
         let ver = mavPacket.substring(0, 2);
+        let msg_len = parseInt(mavPacket.substring(2, 4), 16);
         let sys_id = '';
         let msg_id = '';
         let base_offset = 12;
