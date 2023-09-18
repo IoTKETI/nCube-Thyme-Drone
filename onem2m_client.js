@@ -414,10 +414,10 @@ function http_request(path, method, ty, bodyString, callback) {
                         console.log('[http_adn] xml parse error]');
                         jsonObj = {};
                         jsonObj.dbg = res_body;
-                        callback(parseInt(res), jsonObj);
+                        callback(res, jsonObj);
                     }
                     else {
-                        callback(parseInt(res), jsonObj);
+                        callback(res, jsonObj);
                     }
                 });
             }
@@ -427,23 +427,23 @@ function http_request(path, method, ty, bodyString, callback) {
                         console.log('[http_adn] cbor parse error]');
                         jsonObj = {};
                         jsonObj.dbg = res_body;
-                        callback(parseInt(res), jsonObj);
+                        callback(res, jsonObj);
                     }
                     else {
-                        callback(parseInt(res), jsonObj);
+                        callback(res, jsonObj);
                     }
                 });
             }
             else {
                 try {
                     jsonObj = JSON.parse(res_body);
-                    callback(parseInt(res), jsonObj);
+                    callback(res, jsonObj);
                 }
                 catch (e) {
                     console.log('[http_adn] json parse error]');
                     var jsonObj = {};
                     jsonObj.dbg = res_body;
-                    callback(parseInt(res), jsonObj);
+                    callback(res, jsonObj);
                 }
             }
         });
@@ -751,7 +751,7 @@ var crtae = (parent, rn, api, callback) => {
         }
 
         http_request(parent, 'post', '2', bodyString, (res, res_body) => {
-            callback(res.headers['x-m2m-rsc'], res_body);
+            callback(parseInt(res.headers['x-m2m-rsc']), res_body);
         });
     }
     else if (onem2m_options.protocol === 'mqtt') {
@@ -844,7 +844,7 @@ var crtae = (parent, rn, api, callback) => {
                     }
                 }
             }
-            callback(rsc, res_body);
+            callback(parseInt(rsc), res_body);
         });
     }
     else if (onem2m_options.protocol === 'ws') {
@@ -898,7 +898,7 @@ var crtae = (parent, rn, api, callback) => {
 var rtvae = (target, callback) => {
     if (onem2m_options.protocol === 'http') {
         http_request(target, 'get', '', '', (res, res_body) => {
-            callback(res.headers['x-m2m-rsc'], res_body);
+            callback(parseInt(res.headers['x-m2m-rsc']), res_body);
         });
     }
     else if (onem2m_options.protocol === 'mqtt') {
@@ -951,7 +951,7 @@ var rtvae = (target, callback) => {
                     }
                 }
             }
-            callback(rsc, res_body);
+            callback(parseInt(rsc), res_body);
         });
     }
     else if (onem2m_options.protocol === 'ws') {
@@ -1021,7 +1021,7 @@ var udtae = (target, callback) => {
         }
 
         http_request(target, 'put', '', bodyString, (res, res_body) => {
-            callback(res.headers['x-m2m-rsc'], res_body);
+            callback(parseInt(res.headers['x-m2m-rsc']), res_body);
         });
     }
     else if (onem2m_options.protocol === 'mqtt') {
@@ -1039,7 +1039,7 @@ var udtae = (target, callback) => {
 var delae = (target, callback) => {
     if (onem2m_options.protocol === 'http') {
         http_request(target, 'delete', '', '', (res, res_body) => {
-            callback(res.headers['x-m2m-rsc'], res_body);
+            callback(parseInt(res.headers['x-m2m-rsc']), res_body);
         });
     }
     else if (onem2m_options.protocol === 'mqtt') {
@@ -1086,7 +1086,7 @@ var crtct = (parent, rn, count, callback) => {
         http_request(parent, 'post', '3', bodyString, (res, res_body) => {
             console.log(count + ' - ' + parent + '/' + rn + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
             console.log(res_body);
-            callback(res.headers['x-m2m-rsc'], res_body, count);
+            callback(parseInt(res.headers['x-m2m-rsc']), res_body, count);
         });
     }
     else if (onem2m_options.protocol === 'mqtt') {
@@ -1176,7 +1176,7 @@ var crtct = (parent, rn, count, callback) => {
                 }
             }
             console.log(count + ' - ' + parent + '/' + rn + ' - x-m2m-rsc : ' + rsc + ' <----');
-            callback(rsc, res_body, count);
+            callback(parseInt(rsc), res_body, count);
         });
     }
     else if (onem2m_options.protocol === 'ws') {
@@ -1234,7 +1234,7 @@ var rtvct = (target, count, callback) => {
         http_request(target, 'get', '', '', (res, res_body) => {
             console.log(count + ' - ' + target + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
             console.log(res_body);
-            callback(res.headers['x-m2m-rsc'], res_body, count);
+            callback(parseInt(res.headers['x-m2m-rsc']), res_body, count);
         });
     }
     else if (onem2m_options.protocol === 'mqtt') {
@@ -1348,7 +1348,7 @@ var udtct = (target, lbl, count, callback) => {
 
         http_request(target, 'put', '', bodyString, (res, res_body) => {
             console.log(count + ' - ' + target + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
-            callback(res.headers['x-m2m-rsc'], res_body, count);
+            callback(parseInt(res.headers['x-m2m-rsc']), res_body, count);
         });
     }
     else if (onem2m_options.protocol === 'mqtt') {
@@ -1367,7 +1367,7 @@ var delct = (target, count, callback) => {
     if (onem2m_options.protocol === 'http') {
         http_request(target, 'delete', '', '', (res, res_body) => {
             console.log(count + ' - ' + target + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
-            callback(res.headers['x-m2m-rsc'], res_body, count);
+            callback(parseInt(res.headers['x-m2m-rsc']), res_body, count);
         });
     }
     else if (onem2m_options.protocol === 'mqtt') {
@@ -1421,7 +1421,7 @@ var crtsub = (parent, rn, nu, count, callback) => {
         http_request(parent, 'post', '23', bodyString, (res, res_body) => {
             console.log(count + ' - ' + parent + '/' + rn + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
             console.log(JSON.stringify(res_body));
-            callback(res.headers['x-m2m-rsc'], res_body, count);
+            callback(parseInt(res.headers['x-m2m-rsc']), res_body, count);
         });
     }
     else if (onem2m_options.protocol === 'mqtt') {
@@ -1522,7 +1522,7 @@ var crtsub = (parent, rn, nu, count, callback) => {
                 }
             }
             console.log(count + ' - ' + parent + '/' + rn + ' - x-m2m-rsc : ' + rsc + ' <----');
-            callback(rsc, res_body, count);
+            callback(parseInt(rsc), res_body, count);
         });
     }
     else if (onem2m_options.protocol === 'ws') {
@@ -1695,7 +1695,7 @@ var delsub = (target, count, callback) => {
         http_request(target, 'delete', '', '', (res, res_body) => {
             console.log(count + ' - ' + target + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
             console.log(res_body);
-            callback(res.headers['x-m2m-rsc'], res_body, count);
+            callback(parseInt(res.headers['x-m2m-rsc']), res_body, count);
         });
     }
     else if (onem2m_options.protocol === 'mqtt') {
@@ -1750,7 +1750,7 @@ var delsub = (target, count, callback) => {
                 }
             }
             console.log(count + ' - ' + target + ' - x-m2m-rsc : ' + rsc + ' <----');
-            callback(rsc, res_body, count);
+            callback(parseInt(rsc), res_body, count);
         });
     }
     else if (onem2m_options.protocol === 'ws') {
@@ -1823,7 +1823,7 @@ var crtci = (parent, count, strContent, socket, callback) => {
         }
 
         http_request(parent, 'post', '4', bodyString, (res, res_body) => {
-            callback(res.headers['x-m2m-rsc'], res_body, parent, socket);
+            callback(parseInt(res.headers['x-m2m-rsc']), res_body, count);
         });
     }
     else if (onem2m_options.protocol === 'mqtt') {
@@ -1905,7 +1905,7 @@ var crtci = (parent, count, strContent, socket, callback) => {
                     }
                 }
             }
-            callback(rsc, res_body, parent, socket);
+            callback(parseInt(rsc), res_body, parent, socket);
         });
     }
     else if (onem2m_options.protocol === 'ws') {
@@ -2327,7 +2327,7 @@ let createSortieContainer = (parent, rn, time_boot_ms, count, callback) => {
     http_request(parent, 'post', '3', bodyString, (res, res_body) => {
         console.log(count + ' - ' + parent + '/' + rn + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
         console.log(res_body);
-        callback(res.headers['x-m2m-rsc'], res_body, count);
+        callback(parseInt(res.headers['x-m2m-rsc']), res_body, count);
     });
 };
 
