@@ -331,17 +331,25 @@ function parseMavFromDrone(mavPacket) {
         my_system_id = sys_id;
 
         if (msg_id === mavlink.MAVLINK_MSG_ID_HEARTBEAT) { // #00 : HEARTBEAT
-            var custom_mode = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
+            let my_len = 9;
+            let ar = mavPacket.split('');
+            for (let i = 0; i < (my_len - msg_len); i++) {
+                ar.splice(ar.length - 4, 0, '0');
+                ar.splice(ar.length - 4, 0, '0');
+            }
+            mavPacket = ar.join('');
+
+            let custom_mode = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
             base_offset += 8;
-            var type = mavPacket.substring(base_offset, base_offset + 2).toLowerCase();
+            let type = mavPacket.substring(base_offset, base_offset + 2).toLowerCase();
             base_offset += 2;
-            var autopilot = mavPacket.substring(base_offset, base_offset + 2).toLowerCase();
+            let autopilot = mavPacket.substring(base_offset, base_offset + 2).toLowerCase();
             base_offset += 2;
-            var base_mode = mavPacket.substring(base_offset, base_offset + 2).toLowerCase();
+            let base_mode = mavPacket.substring(base_offset, base_offset + 2).toLowerCase();
             base_offset += 2;
-            var system_status = mavPacket.substring(base_offset, base_offset + 2).toLowerCase();
+            let system_status = mavPacket.substring(base_offset, base_offset + 2).toLowerCase();
             base_offset += 2;
-            var mavlink_version = mavPacket.substring(base_offset, base_offset + 2).toLowerCase();
+            let mavlink_version = mavPacket.substring(base_offset, base_offset + 2).toLowerCase();
 
             fc.heartbeat = {};
             fc.heartbeat.type = Buffer.from(type, 'hex').readUInt8(0);
@@ -394,23 +402,31 @@ function parseMavFromDrone(mavPacket) {
             }
         }
         else if (msg_id === mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT) { // #33
-            var time_boot_ms = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
+            let my_len = 28;
+            let ar = mavPacket.split('');
+            for (let i = 0; i < (my_len - msg_len); i++) {
+                ar.splice(ar.length - 4, 0, '0');
+                ar.splice(ar.length - 4, 0, '0');
+            }
+            mavPacket = ar.join('');
+
+            let time_boot_ms = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
             base_offset += 8;
-            var lat = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
+            let lat = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
             base_offset += 8;
-            var lon = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
+            let lon = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
             base_offset += 8;
-            var alt = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
+            let alt = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
             base_offset += 8;
-            var relative_alt = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
+            let relative_alt = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
             base_offset += 8;
-            var vx = mavPacket.substring(base_offset, base_offset + 4).toLowerCase();
+            let vx = mavPacket.substring(base_offset, base_offset + 4).toLowerCase();
             base_offset += 4;
-            var vy = mavPacket.substring(base_offset, base_offset + 4).toLowerCase();
+            let vy = mavPacket.substring(base_offset, base_offset + 4).toLowerCase();
             base_offset += 4;
-            var vz = mavPacket.substring(base_offset, base_offset + 4).toLowerCase();
+            let vz = mavPacket.substring(base_offset, base_offset + 4).toLowerCase();
             base_offset += 4;
-            var hdg = mavPacket.substring(base_offset, base_offset + 4).toLowerCase();
+            let hdg = mavPacket.substring(base_offset, base_offset + 4).toLowerCase();
 
             fc.global_position_int = {};
             fc.global_position_int.time_boot_ms = Buffer.from(time_boot_ms, 'hex').readUInt32LE(0);
