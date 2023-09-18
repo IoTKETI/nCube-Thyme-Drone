@@ -12,36 +12,37 @@
  * Created by ryeubi on 2015-08-31.
  */
 
-var fs = require('fs');
-var express = require('express');
-var http = require('http');
-var mqtt = require('mqtt');
-var coap = require('coap');
-var WebSocketClient = require('websocket').client;
+const fs = require('fs');
+const express = require('express');
+const http = require('http');
+const mqtt = require('mqtt');
+const coap = require('coap');
+const WebSocketClient = require('websocket').client;
+const axios = require('axios');
 
-var bodyParser = require('body-parser');
-var url = require('url');
-var util = require('util');
+const bodyParser = require('body-parser');
+const url = require('url');
+const util = require('util');
 
-var js2xmlparser = require("js2xmlparser");
-var xml2js = require('xml2js');
-var shortid = require('shortid');
-var cbor = require('cbor');
+const js2xmlparser = require("js2xmlparser");
+const xml2js = require('xml2js');
+const shortid = require('shortid');
+const cbor = require('cbor');
 
-var EventEmitter = require('events');
+const EventEmitter = require('events');
 
 
-var app = express();
-var server = null;
-var coap_server = null;
+let app = express();
+let server = null;
+let coap_server = null;
 
-var mqtt_sub_client = null;
+let mqtt_sub_client = null;
 
 global.callback_q = {};
-var count_q = {};
+let count_q = {};
 
-var onem2m_options = {};
-var _this = null;
+let onem2m_options = {};
+let _this = null;
 
 function Onem2mClient(options) {
     onem2m_options = options;
@@ -2287,20 +2288,20 @@ app.post('/:resourcename0', onem2mParser, (request, response) => {
 
 let getSortieLatest = async (path, cra, callback) => {
     try {
-        http_request(path + '?fu=1&ty=3&cra=' + cra, 'get', '', '', (res, res_body) => {
-            console.log(path + '?fu=1&ty=3&cra=' + cra + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
-            console.log(res_body);
-            callback(res_body.status, res_body.data['m2m:uril']);
-        });
-        // const response = await axios.get(path + '?fu=1&ty=3&cra=' + cra, {
-        //     headers: {
-        //         'X-M2M-RI': String(parseInt(Math.random() * 10000)),
-        //         'X-M2M-Origin': 'SVue',
-        //         'Content-Type': 'application/json'
-        //     }
+        // http_request(path + '?fu=1&ty=3&cra=' + cra, 'get', '', '', (res, res_body) => {
+        //     console.log(path + '?fu=1&ty=3&cra=' + cra + ' - x-m2m-rsc : ' + res.headers['x-m2m-rsc'] + ' <----');
+        //     console.log(res_body);
+        //     callback(res_body.status, res_body.data['m2m:uril']);
         // });
-        // console.log('getSortieLatest', response.data['m2m:uril']);
-        // callback(response.status, response.data['m2m:uril']);
+        const response = await axios.get(path + '?fu=1&ty=3&cra=' + cra, {
+            headers: {
+                'X-M2M-RI': String(parseInt(Math.random() * 10000)),
+                'X-M2M-Origin': 'SVue',
+                'Content-Type': 'application/json'
+            }
+        });
+        console.log('getSortieLatest', response.data['m2m:uril']);
+        callback(response.status, response.data['m2m:uril']);
     }
     catch (err) {
         console.log("Error >>", err);

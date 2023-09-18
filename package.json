@@ -7,6 +7,7 @@
         "doc": "doc"
     },
     "dependencies": {
+        "axios": "^1.5.0",
         "cbor": "^7.0.5",
         "coap": "^0.24.0",
         "express": "^4.17.1",
