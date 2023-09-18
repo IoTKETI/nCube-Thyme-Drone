@@ -321,6 +321,7 @@ let flag_base_mode = 0;
 function parseMavFromDrone(mavPacket) {
     try {
         let ver = mavPacket.substring(0, 2);
+        let msg_len = parseInt(mavPacket.substring(2, 4), 16);
         let sys_id = '';
         let msg_id = '';
         let base_offset = 12;
@@ -338,6 +339,14 @@ function parseMavFromDrone(mavPacket) {
         my_system_id = sys_id;
 
         if (msg_id === mavlink.MAVLINK_MSG_ID_HEARTBEAT) { // #00 : HEARTBEAT
+            let my_len = 9;
+            let ar = mavPacket.split('');
+            for (let i = 0; i < (my_len - msg_len); i++) {
+                ar.splice(ar.length - 4, 0, '0');
+                ar.splice(ar.length - 4, 0, '0');
+            }
+            mavPacket = ar.join('');
+
             let custom_mode = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
             base_offset += 8;
             let type = mavPacket.substring(base_offset, base_offset + 2).toLowerCase();
@@ -401,6 +410,14 @@ function parseMavFromDrone(mavPacket) {
             }
         }
         else if (msg_id === mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT) { // #33
+            let my_len = 28;
+            let ar = mavPacket.split('');
+            for (let i = 0; i < (my_len - msg_len); i++) {
+                ar.splice(ar.length - 4, 0, '0');
+                ar.splice(ar.length - 4, 0, '0');
+            }
+            mavPacket = ar.join('');
+
             let time_boot_ms = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
             base_offset += 8;
             let lat = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
