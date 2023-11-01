@@ -45,14 +45,14 @@ try {
 catch (e) {
     console.log('can not find flight.json file');
     ae_name.approval_gcs = 'KETI';
-    ae_name.id = 'Dione';
+    ae_name.flight = 'Dione';
     fs.writeFileSync('flight.json', JSON.stringify(ae_name, null, 4), 'utf8');
 }
 //console.log(flight);
 
 ae = {
-    name: ae_name.id,
-    id: 'S' + ae_name.id,
+    name: ae_name.flight,
+    id: 'S' + ae_name.flight,
     parent: '/' + cse.name,
     appid: 'Thyme_Drone',
     port: '9727',
