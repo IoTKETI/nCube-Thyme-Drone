@@ -29,7 +29,7 @@ conf.sim = 'disable'; // enable or disable
 
 // build cse
 cse = {
-    host: 'gcs.iotocean.org',
+    host: 'mobius.iotocean.org',
     port: '7579',
     name: 'Mobius',
     id: '/Mobius2',
