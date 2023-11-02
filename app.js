@@ -283,6 +283,7 @@ function retrieve_my_cnt_name() {
         if (rsc === 2000) {
             drone_info = res_body[Object.keys(res_body)[0]].con;
             // console.log(drone_info);
+            drone_info.id = conf.ae.name;
             fs.writeFileSync('./drone_info.json', JSON.stringify(drone_info, null, 4), 'utf8');
 
             conf.sub = [];
