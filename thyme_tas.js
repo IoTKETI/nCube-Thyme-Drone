@@ -60,6 +60,13 @@ let createConnection = () => {
                         doSubscribe(getDataTopic[topicName]);
                     }
                 }
+                for (let idx in msw_data_topic) {
+                    if (conf.tas.client.connected) {
+                        conf.tas.client.subscribe(msw_data_topic[idx], () => {
+                            console.log('subscribe msw_data_topic[' + idx + '] as ' + msw_data_topic[idx]);
+                        });
+                    }
+                }
             });
 
             conf.tas.client.on('error', (error) => {
@@ -128,6 +135,18 @@ let createConnection = () => {
                         // disarm sortie 적용
                         my_sortie_name = 'disarm';
                         my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
+                    }
+                }
+                else if (msw_data_topic.includes(topic)) {
+                    try {
+                        onem2m_client.create_cin(topic, 0, JSON.parse(message.toString()), null, (status) => {
+                            console.log('x-m2m-rsc : ' + status + ' <----');
+                        });
+                    }
+                    catch (e) {
+                        onem2m_client.create_cin(topic, 0, message.toString(), null, (status) => {
+                            console.log('x-m2m-rsc : ' + status + ' <----');
+                        });
                     }
                 }
                 /* */

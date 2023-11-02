@@ -441,7 +441,7 @@ function http_request(path, method, ty, bodyString, callback) {
                     callback(res, jsonObj);
                 }
                 catch (e) {
-                    console.log('[http_adn] json parse error]');
+                    console.log('[http_adn] json parse error');
                     var jsonObj = {};
                     jsonObj.dbg = res_body;
                     callback(res, jsonObj);

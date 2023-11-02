@@ -25,11 +25,11 @@ let acp = {};
 
 conf.useprotocol = 'http'; // select one for 'http' or 'mqtt' or 'coap' or 'ws'
 
-conf.sim = 'disable'; // enable or disable
+conf.sim = 'enable'; // enable or disable
 
 // build cse
 cse = {
-    host: 'mobius.iotocean.org',
+    host: 'localhost',
     port: '7579',
     name: 'Mobius',
     id: '/Mobius2',

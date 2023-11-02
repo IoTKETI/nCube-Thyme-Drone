@@ -15,6 +15,8 @@
 const Onem2mClient = require('./onem2m_client');
 
 const thyme_tas = require('./thyme_tas');
+const fs = require("fs");
+const {spawn, exec} = require("child_process");
 
 let options = {
     protocol: conf.useprotocol,
@@ -40,6 +42,8 @@ global.my_parent_cnt_name = '';
 global.my_cnt_name = '';
 let my_command_parent_name = '';
 let my_command_name = '';
+global.msw_data_topic = [];
+global.msw_control_topic = [];
 
 let my_drone_type = 'ardupilot';
 global.my_system_id = 8;
@@ -48,6 +52,151 @@ global.drone_info = {};
 
 let request_count = 0;
 
+function git_clone(mission_name, directory_name, repository_url) {
+    console.log('[Git] Mission(' + mission_name + ') cloning...');
+    try {
+        require('fs-extra').removeSync('./' + directory_name);
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+
+    let gitClone = spawn('git', ['clone', repository_url, directory_name]);
+
+    gitClone.stdout.on('data', (data) => {
+        console.log('stdout: ' + data);
+    });
+
+    gitClone.stderr.on('data', (data) => {
+        console.log('stderr: ' + data);
+    });
+
+    gitClone.on('exit', (code) => {
+        console.log('exit: ' + code);
+
+        setTimeout(npm_install, 5000, mission_name, directory_name);
+    });
+
+    gitClone.on('error', (code) => {
+        console.log('error: ' + code);
+    });
+}
+
+function git_pull(mission_name, directory_name) {
+    console.log('[Git] Mission(' + mission_name + ') pull...');
+    try {
+        let cmd;
+        if (process.platform === 'win32') {
+            cmd = 'git';
+        }
+        else {
+            cmd = 'git';
+        }
+
+        let gitPull = spawn(cmd, ['pull'], {cwd: process.cwd() + '/' + directory_name});
+
+        gitPull.stdout.on('data', (data) => {
+            console.log('stdout: ' + data);
+        });
+
+        gitPull.stderr.on('data', (data) => {
+            console.log('stderr: ' + data);
+            if (data.includes('Could not resolve host')) {
+                setTimeout(npm_install, 1000, mission_name, directory_name);
+            }
+        });
+
+        gitPull.on('exit', (code) => {
+            console.log('exit: ' + code);
+
+            setTimeout(npm_install, 1000, mission_name, directory_name);
+        });
+
+        gitPull.on('error', (code) => {
+            console.log('error: ' + code);
+        });
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+}
+
+function npm_install(mission_name, directory_name) {
+    console.log('npm_install [ ' + mission_name + ' ]');
+    try {
+        let cmd;
+        if (process.platform === 'win32') {
+            cmd = 'npm.cmd';
+        }
+        else {
+            cmd = 'npm';
+        }
+
+        let npmInstall = spawn(cmd, ['install'], {cwd: process.cwd() + '/' + directory_name});
+
+        npmInstall.stdout.on('data', (data) => {
+            console.log('stdout: ' + data);
+        });
+
+        npmInstall.stderr.on('data', (data) => {
+            console.log('stderr: ' + data);
+        });
+
+        npmInstall.on('exit', (code) => {
+            console.log('exit: ' + code);
+
+            setTimeout(fork_msw, 10, mission_name, directory_name)
+        });
+
+        npmInstall.on('error', (code) => {
+            console.log('error: ' + code);
+
+            setTimeout(npm_install, 1000, mission_name, directory_name);
+        });
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+}
+
+function fork_msw(mission_name, directory_name) {
+    console.log('fork_msw [ ' + mission_name + ' ]');
+    let executable_name = directory_name.replace(mission_name + '_', '');
+
+    exec('pm2 list', (error, stdout, stderr) => {
+        if (error) {
+            console.log('error: ' + error);
+        }
+        if (stdout) {
+            console.log('stdout: ' + stdout);
+            if (!stdout.includes(mission_name)) {
+                let nodeMsw = exec('pm2 start ' + executable_name + '.js', {cwd: process.cwd() + '/' + directory_name});
+
+                nodeMsw.stdout.on('data', (data) => {
+                    console.log('stdout: ' + data);
+                });
+
+                nodeMsw.stderr.on('data', (data) => {
+                    console.log('stderr: ' + data);
+                });
+
+                nodeMsw.on('exit', (code) => {
+                    console.log('exit: ' + code);
+                });
+
+                nodeMsw.on('error', (code) => {
+                    console.log('error: ' + code);
+
+                    setTimeout(npm_install, 10, directory_name);
+                });
+            }
+        }
+        if (stderr) {
+            console.log('stderr: ' + stderr);
+        }
+    });
+}
+
 function ae_response_action(status, res_body, callback) {
     var aeid = res_body['m2m:ae']['aei'];
     conf.ae.id = aeid;
@@ -55,16 +204,16 @@ function ae_response_action(status, res_body, callback) {
 }
 
 function create_cnt_all(count, callback) {
-    if(conf.cnt.length === 0) {
+    if (conf.cnt.length === 0) {
         callback(2001, count);
     }
     else {
-        if(conf.cnt.hasOwnProperty(count)) {
+        if (conf.cnt.hasOwnProperty(count)) {
             var parent = conf.cnt[count].parent;
             var rn = conf.cnt[count].name;
-            onem2m_client.create_cnt(parent, rn, count,  (rsc, res_body, count) =>{
+            onem2m_client.create_cnt(parent, rn, count, (rsc, res_body, count) => {
                 if (rsc === 5106 || rsc === 2001 || rsc === 4105) {
-                    create_cnt_all(++count,  (status, count) =>{
+                    create_cnt_all(++count, (status, count) => {
                         callback(status, count);
                     });
                 }
@@ -80,15 +229,15 @@ function create_cnt_all(count, callback) {
 }
 
 function delete_sub_all(count, callback) {
-    if(conf.sub.length === 0) {
+    if (conf.sub.length === 0) {
         callback(2001, count);
     }
     else {
-        if(conf.sub.hasOwnProperty(count)) {
+        if (conf.sub.hasOwnProperty(count)) {
             var target = conf.sub[count].parent + '/' + conf.sub[count].name;
             onem2m_client.delete_sub(target, count, function (rsc, res_body, count) {
                 if (rsc === 5106 || rsc === 2002 || rsc === 2000 || rsc === 4105 || rsc === 4004) {
-                    delete_sub_all(++count,  (status, count) => {
+                    delete_sub_all(++count, (status, count) => {
                         callback(status, count);
                     });
                 }
@@ -104,17 +253,17 @@ function delete_sub_all(count, callback) {
 }
 
 function create_sub_all(count, callback) {
-    if(conf.sub.length === 0) {
+    if (conf.sub.length === 0) {
         callback(2001, count);
     }
     else {
-        if(conf.sub.hasOwnProperty(count)) {
+        if (conf.sub.hasOwnProperty(count)) {
             var parent = conf.sub[count].parent;
             var rn = conf.sub[count].name;
             var nu = conf.sub[count].nu;
-            onem2m_client.create_sub(parent, rn, nu, count,  (rsc, res_body, count) => {
+            onem2m_client.create_sub(parent, rn, nu, count, (rsc, res_body, count) => {
                 if (rsc === 5106 || rsc === 2001 || rsc === 4105) {
-                    create_sub_all(++count,  (status, count) => {
+                    create_sub_all(++count, (status, count) => {
                         callback(status, count);
                     });
                 }
@@ -134,6 +283,7 @@ function retrieve_my_cnt_name() {
         if (rsc === 2000) {
             drone_info = res_body[Object.keys(res_body)[0]].con;
             // console.log(drone_info);
+            fs.writeFileSync('./drone_info.json', JSON.stringify(drone_info, null, 4), 'utf8');
 
             conf.sub = [];
             conf.cnt = [];
@@ -141,13 +291,15 @@ function retrieve_my_cnt_name() {
 
             if (drone_info.hasOwnProperty('gcs')) {
                 my_gcs_name = drone_info.gcs;
-            } else {
+            }
+            else {
                 my_gcs_name = 'nCube_Drone';
             }
 
             if (drone_info.hasOwnProperty('host')) {
                 conf.cse.host = drone_info.host;
-            } else {
+            }
+            else {
             }
 
             console.log("gcs host is " + conf.cse.host);
@@ -171,14 +323,89 @@ function retrieve_my_cnt_name() {
 
             if (drone_info.hasOwnProperty('type')) {
                 my_drone_type = drone_info.type;
-            } else {
+            }
+            else {
                 my_drone_type = 'ardupilot';
             }
 
             if (drone_info.hasOwnProperty('system_id')) {
                 my_system_id = drone_info.system_id;
-            } else {
+            }
+            else {
                 my_system_id = 8;
+            }
+
+            if (drone_info.hasOwnProperty('mission')) {
+                var info = {};
+                info.parent = '/Mobius/' + drone_info.gcs;
+                info.name = 'Mission_Data';
+                conf.cnt.push(JSON.parse(JSON.stringify(info)));
+
+                info = {};
+                info.parent = '/Mobius/' + drone_info.gcs + '/Mission_Data';
+                info.name = drone_info.drone;
+                conf.cnt.push(JSON.parse(JSON.stringify(info)));
+
+                for (let mission_name in drone_info.mission) {
+                    if (drone_info.mission.hasOwnProperty(mission_name)) {
+                        info = {};
+                        info.parent = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone;
+                        info.name = mission_name;
+                        conf.cnt.push(JSON.parse(JSON.stringify(info)));
+
+                        let chk_cnt = 'container';
+                        if (drone_info.mission[mission_name].hasOwnProperty(chk_cnt)) {
+                            for (let idx in drone_info.mission[mission_name][chk_cnt]) {
+                                if (drone_info.mission[mission_name][chk_cnt].hasOwnProperty(idx)) {
+                                    let container_name = drone_info.mission[mission_name][chk_cnt][idx].split(':')[0];
+                                    info = {};
+                                    info.parent = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name;
+                                    info.name = container_name;
+
+                                    conf.cnt.push(JSON.parse(JSON.stringify(info)));
+
+                                    msw_data_topic.push(info.parent + '/' + info.name);
+                                }
+                            }
+                        }
+
+                        chk_cnt = 'sub_container';
+                        if (drone_info.mission[mission_name].hasOwnProperty(chk_cnt)) {
+                            for (let idx in drone_info.mission[mission_name][chk_cnt]) {
+                                if (drone_info.mission[mission_name][chk_cnt].hasOwnProperty(idx)) {
+                                    let container_name = drone_info.mission[mission_name][chk_cnt][idx];
+                                    info = {};
+                                    info.parent = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name;
+                                    info.name = container_name;
+                                    conf.cnt.push(JSON.parse(JSON.stringify(info)));
+
+                                    info = {};
+                                    info.parent = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name + '/' + container_name;
+                                    info.name = 'sub_msw';
+                                    info.nu = 'mqtt://' + conf.cse.host + '/' + conf.ae.id + '?ct=json';
+                                    conf.sub.push(JSON.parse(JSON.stringify(info)));
+                                }
+                            }
+                        }
+
+                        chk_cnt = 'git';
+                        if (drone_info.mission[mission_name].hasOwnProperty(chk_cnt)) {
+                            let repo_arr = drone_info.mission[mission_name][chk_cnt].split('/');
+                            let directory_name = mission_name + '_' + repo_arr[repo_arr.length - 1].replace('.git', '');
+                            try {
+                                if (fs.existsSync('./' + directory_name)) {
+                                    setTimeout(git_pull, 10, mission_name, directory_name);
+                                }
+                                else {
+                                    setTimeout(git_clone, 10, mission_name, directory_name, drone_info.mission[mission_name][chk_cnt]);
+                                }
+                            }
+                            catch (e) {
+                                console.log(e.message);
+                            }
+                        }
+                    }
+                }
             }
 
             var info = {};
@@ -194,7 +421,7 @@ function retrieve_my_cnt_name() {
             my_command_parent_name = info.parent;
             my_command_name = my_command_parent_name + '/' + info.name;
 
-            if (mqtt_client !== null) {
+            if (mqtt_client) {
                 mqtt_client.subscribe(my_command_name, () => {
                     console.log('subscribe my_command_name as ' + my_command_name);
                 });
@@ -218,14 +445,14 @@ function setup_resources(_status) {
 
     console.log('[status] : ' + _status);
 
-    if (_status === 'rtvct'){
+    if (_status === 'rtvct') {
         retrieve_my_cnt_name();
     }
     else if (_status === 'crtae') {
-        onem2m_client.create_ae(conf.ae.parent, conf.ae.name, conf.ae.appid,  (status, res_body) =>{
+        onem2m_client.create_ae(conf.ae.parent, conf.ae.name, conf.ae.appid, (status, res_body) => {
             console.log(res_body);
             if (status === 2001) {
-                ae_response_action(status, res_body,  (status, aeid) =>{
+                ae_response_action(status, res_body, (status, aeid) => {
                     console.log('x-m2m-rsc : ' + status + ' - ' + aeid + ' <----');
                     request_count = 0;
 
@@ -244,12 +471,12 @@ function setup_resources(_status) {
         });
     }
     else if (_status === 'rtvae') {
-        onem2m_client.retrieve_ae(conf.ae.parent + '/' + conf.ae.name,  (status, res_body) => {
+        onem2m_client.retrieve_ae(conf.ae.parent + '/' + conf.ae.name, (status, res_body) => {
             if (status === 2000) {
                 var aeid = res_body['m2m:ae']['aei'];
                 console.log('x-m2m-rsc : ' + status + ' - ' + aeid + ' <----');
 
-                if(conf.ae.id !== aeid && conf.ae.id !== ('/'+aeid)) {
+                if (conf.ae.id !== aeid && conf.ae.id !== ('/' + aeid)) {
                     console.log('AE-ID created is ' + aeid + ' not equal to device AE-ID is ' + conf.ae.id);
                 }
                 else {
@@ -264,8 +491,8 @@ function setup_resources(_status) {
         });
     }
     else if (_status === 'crtct') {
-        create_cnt_all(request_count,  (status, count) => {
-            if(status === 9999) {
+        create_cnt_all(request_count, (status, count) => {
+            if (status === 9999) {
                 console.log('[???} create container error!');
                 // setTimeout(setup_resources, 3000, 'crtct');
             }
@@ -279,8 +506,8 @@ function setup_resources(_status) {
         });
     }
     else if (_status === 'delsub') {
-        delete_sub_all(request_count,  (status, count) =>{
-            if(status === 9999) {
+        delete_sub_all(request_count, (status, count) => {
+            if (status === 9999) {
                 console.log('[???} create container error!');
                 // setTimeout(setup_resources, 3000, 'delsub');
             }
@@ -294,8 +521,8 @@ function setup_resources(_status) {
         });
     }
     else if (_status === 'crtsub') {
-        create_sub_all(request_count,  (status, count) => {
-            if(status === 9999) {
+        create_sub_all(request_count, (status, count) => {
+            if (status === 9999) {
                 console.log('[???} create container error!');
                 // setTimeout(setup_resources, 1000, 'crtsub');
             }
@@ -313,18 +540,28 @@ function setup_resources(_status) {
     }
 }
 
-onem2m_client.on('notification',  (source_uri, cinObj) => {
+onem2m_client.on('notification', (source_uri, cinObj) => {
 
-    console.log(source_uri, cinObj);
+    // console.log(source_uri, cinObj);
 
     var path_arr = source_uri.split('/')
-    var event_cnt_name = path_arr[path_arr.length-2];
+    var event_cnt_name = path_arr[path_arr.length - 2];
     var content = cinObj.con;
 
     /* ***** USER CODE ***** */
-    if(event_cnt_name === 'led') {
+    if (event_cnt_name === 'led') {
         // send to tas
         thyme_tas.send_to_tas(event_cnt_name, content);
+    }
+    else if (path_arr[3] === 'Mission_Data') {
+        if (conf.tas.client.connected) {
+            path_arr.pop();
+            let control_url = path_arr.join('/');
+            conf.tas.client.publish(control_url, content, () => {
+                console.log(control_url, content)
+            });
+            // TODO: content를 object로 전달받는 경우 추가
+        }
     }
     /* */
 });
