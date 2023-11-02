@@ -360,7 +360,9 @@ function parseMavFromDrone(mavPacket) {
                 fc.heartbeat.custom_mode = Buffer.from(custom_mode, 'hex').readUInt32LE(0);
                 fc.heartbeat.system_status = Buffer.from(system_status, 'hex').readUInt8(0);
                 fc.heartbeat.mavlink_version = Buffer.from(mavlink_version, 'hex').readUInt8(0);
-
+                if (tas.client.connected) {
+                    tas.client.publish('/hb', JSON.stringify(fc.heartbeat));
+                }
                 let armStatus = (fc.heartbeat.base_mode & 0x80) === 0x80;
 
                 if (_my_sortie_name === 'unknown') {
@@ -439,6 +441,10 @@ function parseMavFromDrone(mavPacket) {
             fc.global_position_int.vy = Buffer.from(vy, 'hex').readInt16LE(0);
             fc.global_position_int.vz = Buffer.from(vz, 'hex').readInt16LE(0);
             fc.global_position_int.hdg = Buffer.from(hdg, 'hex').readUInt16LE(0);
+
+            if (tas.client.connected) {
+                tas.client.publish('/gpi', JSON.stringify(fc.global_position_int));
+            }
         }
     }
     catch (e) {
