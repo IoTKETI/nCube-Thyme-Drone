@@ -30,6 +30,7 @@ const shortid = require('shortid');
 const cbor = require('cbor');
 
 const EventEmitter = require('events');
+const {send_to_tas} = require("./thyme_tas");
 
 
 let app = express();
@@ -229,7 +230,7 @@ var mqtt_init = () => {
         else if (topic_arr[1] === 'Mobius') {
             // console.log(topic, '-', message.toString('hex'));
             if (conf.tas.connection) {
-                conf.tas.client.publish('/gcs/cmd', message);
+               send_to_tas('gcs', message);
             }
         }
         else {

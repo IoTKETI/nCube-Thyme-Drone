@@ -93,13 +93,12 @@ let createConnection = () => {
                 /* USER CODES */
                 if (topic === recvDataTopic.gcs) {
                     if (sitlUDP2) {
-                        sitlUDP2.send(message, 0, message.length, PORT2, tas.connection.host,
-                            (err) => {
-                                if (err) {
-                                    console.log('UDP message send error', err);
-                                    return;
-                                }
-                            });
+                        sitlUDP2.send(message, 0, message.length, PORT2, tas.connection.host, (err) => {
+                            if (err) {
+                                console.log('UDP message send error', err);
+                                return;
+                            }
+                        });
                     }
                 }
                 /* */
