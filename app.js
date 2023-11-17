@@ -383,8 +383,9 @@ function retrieve_my_cnt_name() {
                                     info = {};
                                     info.parent = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name + '/' + container_name;
                                     info.name = 'sub_msw';
-                                    info.nu = 'mqtt://' + conf.cse.host + '/' + conf.ae.id + '?ct=json';
+                                    info.nu = 'mqtt://' + conf.cse.host + ':' + conf.cse.mqttport + '/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name + '/' + container_name + '?ct=json';
                                     conf.sub.push(JSON.parse(JSON.stringify(info)));
+                                    // receiver => subscribe topic: /mytopic/subtopic/# or /mytopic/subtopic/json
                                 }
                             }
                         }
